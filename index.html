@@ -8,8 +8,11 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{background:#000;color:#e0f0ff;font-family:'Share Tech Mono',monospace;overflow:hidden;height:100vh;width:100vw;touch-action:none}
+body{background:#000;color:#e0f0ff;font-family:'Share Tech Mono',monospace;overflow:hidden;height:100vh;width:100vw}
 #c{display:block;width:100%;height:100%;touch-action:none}
+/* Scrollable containers — touch scroll support for iOS */
+#msg{-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain}
+.scrollable{-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain}
 
 /* ── HUD ── */
 #hud{position:fixed;top:0;left:0;right:0;padding:8px 12px;display:flex;justify-content:space-between;pointer-events:none;z-index:10;gap:6px;flex-wrap:wrap}
@@ -51,7 +54,7 @@ body{background:#000;color:#e0f0ff;font-family:'Share Tech Mono',monospace;overf
 #mbtn{position:fixed;bottom:10px;left:10px;z-index:10;display:flex;flex-direction:column;gap:4px}
 
 /* ── Modal ── */
-#msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,5,18,0.97);border:2px solid #00d4ff;border-radius:10px;padding:20px 28px;text-align:center;z-index:100;width:min(520px,92vw);max-height:88vh;overflow-y:auto;display:none}
+#msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,5,18,0.97);border:2px solid #00d4ff;border-radius:10px;padding:20px 28px;text-align:center;z-index:100;width:min(520px,92vw);max-height:88vh;overflow-y:scroll;display:none;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain}
 #msg h2{font-family:'Orbitron',sans-serif;font-size:16px;color:#00d4ff;margin-bottom:10px;text-transform:uppercase;letter-spacing:3px}
 #msg p{font-size:12px;color:#a0c8e0;line-height:1.8;margin-bottom:12px}
 .btn{display:inline-block;background:linear-gradient(135deg,#003560,#005090);border:1px solid #00d4ff;color:#00d4ff;font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1.5px;padding:8px 16px;border-radius:4px;cursor:pointer;pointer-events:all;text-transform:uppercase;transition:all .15s;margin:3px;-webkit-user-select:none;user-select:none}
@@ -1302,21 +1305,21 @@ function drawMM(){
   mmx.clearRect(0,0,MM,MM);
   mmx.fillStyle='rgba(0,5,16,.93)'; mmx.fillRect(0,0,MM,MM);
   const cx=MM/2, cy=MM/2, px=plane.position.x, pz=plane.position.z;
-  // City blobs
+  // North-up map: world +X = canvas right, world +Z = canvas UP (sy uses minus)
   CITY_DEFS.forEach(cd=>{
-    const sx=cx+(cd.cx-px)*MM_SC, sy=cy+(cd.cz-pz)*MM_SC;
+    const sx=cx+(cd.cx-px)*MM_SC, sy=cy-(cd.cz-pz)*MM_SC;
     if(sx>-10&&sx<MM+10&&sy>-10&&sy<MM+10){
       mmx.fillStyle='rgba(80,100,160,.4)'; mmx.fillRect(sx-8,sy-8,16,16);
     }
   });
   // Destination line
   if(G.destAP){
-    const dx=cx+(G.destAP.x-px)*MM_SC, dz=cy+(G.destAP.z-pz)*MM_SC;
+    const dx=cx+(G.destAP.x-px)*MM_SC, dz=cy-(G.destAP.z-pz)*MM_SC;
     mmx.beginPath(); mmx.moveTo(cx,cy); mmx.lineTo(dx,dz);
     mmx.strokeStyle='rgba(0,255,157,.28)'; mmx.setLineDash([5,6]); mmx.lineWidth=1; mmx.stroke(); mmx.setLineDash([]);
   }
   AIRPORTS.forEach(ap=>{
-    const sx=cx+(ap.x-px)*MM_SC, sy=cy+(ap.z-pz)*MM_SC;
+    const sx=cx+(ap.x-px)*MM_SC, sy=cy-(ap.z-pz)*MM_SC;
     if(sx<-12||sx>MM+12||sy<-12||sy>MM+12)return;
     const isDest=G.destAP&&G.destAP.id===ap.id;
     const isNear=G.nearAP&&G.nearAP.id===ap.id;
@@ -1328,14 +1331,15 @@ function drawMM(){
     }
     mmx.fillStyle='rgba(180,215,240,.8)'; mmx.font='7px monospace'; mmx.fillText(ap.code,sx+6,sy-2);
   });
-  // Plane arrow — tip points toward +Z (canvas +Y = down), so tip at (0,+11)
-  mmx.save(); mmx.translate(cx,cy); mmx.rotate(G.yaw);
+  // Arrow: tip at (0,-11) local. rotate(PI - G.yaw) makes it point toward plane's travel direction.
+  //   yaw=0 → heading south (canvas +Y), rotate(PI) flips tip to (0,+11) = south ✓
+  //   yaw=PI/2 → heading east, rotate(PI/2) tip points east ✓
+  mmx.save(); mmx.translate(cx,cy); mmx.rotate(Math.PI - G.yaw);
   mmx.fillStyle='#00ffff';
-  mmx.beginPath(); mmx.moveTo(0,11); mmx.lineTo(-5,-7); mmx.lineTo(0,-5); mmx.lineTo(5,-7); mmx.closePath();
+  mmx.beginPath(); mmx.moveTo(0,-11); mmx.lineTo(-5,5); mmx.lineTo(0,3); mmx.lineTo(5,5); mmx.closePath();
   mmx.fill();
-  // Heading tick for clarity
-  mmx.strokeStyle='#00ffff'; mmx.lineWidth=1.5;
-  mmx.beginPath(); mmx.moveTo(0,11); mmx.lineTo(0,14); mmx.stroke();
+  mmx.strokeStyle='rgba(0,255,255,0.6)'; mmx.lineWidth=1.5;
+  mmx.beginPath(); mmx.moveTo(0,-11); mmx.lineTo(0,-14); mmx.stroke();
   mmx.restore();
   mmx.strokeStyle='rgba(0,180,255,.28)'; mmx.lineWidth=1; mmx.strokeRect(0,0,MM,MM);
 }
@@ -1348,8 +1352,103 @@ function toggleCam(){
   document.getElementById('hCam').textContent=labels[G.camMode];
 }
 
-// ═══ NOTIFY / MSG ═══════════════════════════════════════════════
-let nTO;
+// ═══ CRASH SYSTEM ════════════════════════════════════════════════
+function spawnCrashParticles(){
+  const N=28;
+  for(let i=0;i<N;i++){
+    const p=document.createElement('div');
+    const angle=Math.random()*Math.PI*2;
+    const speed=40+Math.random()*120;
+    const size=4+Math.random()*10;
+    const colors=['#ff4020','#ff8800','#ffcc00','#ff2200','#ffdd88','#cccccc'];
+    const col=colors[Math.floor(Math.random()*colors.length)];
+    p.style.cssText=`position:fixed;left:50%;top:50%;width:${size}px;height:${size}px;
+      border-radius:50%;background:${col};z-index:300;pointer-events:none;
+      transform:translate(-50%,-50%);opacity:1;transition:none`;
+    document.body.appendChild(p);
+    let x=0,y=0,vx=Math.cos(angle)*speed,vy=Math.sin(angle)*speed-60,t=0;
+    const tick=()=>{
+      t+=0.016; x+=vx*0.016; y+=vy*0.016; vy+=120*0.016;
+      p.style.transform=`translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+      p.style.opacity=Math.max(0,1-t*1.2);
+      if(t<1.4) requestAnimationFrame(tick); else p.remove();
+    };
+    requestAnimationFrame(tick);
+  }
+  // Smoke trails
+  for(let i=0;i<6;i++){
+    setTimeout(()=>{
+      const s=document.createElement('div');
+      const ox=(Math.random()-.5)*80, oy=(Math.random()-.5)*80;
+      s.style.cssText=`position:fixed;left:calc(50% + ${ox}px);top:calc(50% + ${oy}px);
+        width:${20+Math.random()*30}px;height:${20+Math.random()*30}px;
+        border-radius:50%;background:rgba(80,80,80,0.6);z-index:299;pointer-events:none;
+        transform:translate(-50%,-50%);opacity:0.7;
+        transition:all 1.8s ease-out`;
+      document.body.appendChild(s);
+      requestAnimationFrame(()=>{
+        s.style.transform=`translate(-50%,-50%) scale(4)`;
+        s.style.opacity='0';
+      });
+      setTimeout(()=>s.remove(),1900);
+    },i*80);
+  }
+}
+
+function nearestAirport(){
+  let best=AIRPORTS[0], bestDist=Infinity;
+  ALL_AIRPORTS.filter(a=>a.world===G.currentWorld).forEach(ap=>{
+    const d=Math.hypot(ap.x-plane.position.x, ap.z-plane.position.z);
+    if(d<bestDist){bestDist=d;best=ap;}
+  });
+  return best;
+}
+
+function triggerCrash(reason){
+  if(G.crashed) return;
+  G.crashed=true; G.paused=true;
+  G.spd=0; G.thr=0; G.velY=0; G.onGround=true;
+  plane.position.y=GY;
+
+  // Red flash
+  const flash=document.createElement('div');
+  flash.style.cssText='position:fixed;inset:0;background:rgba(255,30,0,0.65);z-index:200;pointer-events:none;transition:opacity 1.4s';
+  document.body.appendChild(flash);
+  setTimeout(()=>flash.style.opacity='0',60);
+  setTimeout(()=>flash.remove(),1500);
+
+  // Particles
+  spawnCrashParticles();
+
+  const msgs={
+    impact:'Vertical speed too high — the airframe couldn\'t take it.',
+    stall:'Airspeed dropped to zero — fatal stall.',
+    terrain:'Flew into the ground at speed.',
+    wing:'Wing struck the ground — lost control.',
+  };
+  const penaltyPct=0.20;
+  const penalty=Math.round(G.money*penaltyPct);
+  G.money=Math.max(0,G.money-penalty);
+  saveGame();
+
+  setTimeout(()=>{
+    const ap=nearestAirport();
+    showMsg('💥 CRASH',
+      `<span style="color:#ff4060;font-size:15px">${msgs[reason]||'The aircraft was destroyed.'}</span><br><br>
+      Insurance covered the wreckage, but you lost <span style="color:#ff4060">$${penalty.toLocaleString()}</span> (20% deductible).<br><br>
+      <span style="color:#607a90;font-size:11px">Respawning at ${ap.name}.</span>`,
+      [{t:'😤 Try Again',c:'gbtn',a:()=>{
+        G.crashed=false;
+        plane.position.set(ap.x,GY,ap.z+3000);
+        G.onGround=true; G.spd=0; G.thr=0; G.velY=0; G.pitch=0; G.roll=0;
+        G._stallWarn=0; G.fuel=G.maxFuel*0.5;
+        closeMsg(); updateHUD();
+      }}]
+    );
+  },700);
+}
+
+
 function notify(txt,col){
   col=col||'#00ff9d';
   const e=document.getElementById('notif');
@@ -1369,8 +1468,17 @@ function showMsg(title,body,btns){
     bc.appendChild(el);
   });
   document.getElementById('msg').style.display='block';
+  // Hide joysticks so they don't intercept modal touches
+  const tc=document.getElementById('touch-controls');
+  if(tc) tc.style.pointerEvents='none';
 }
-function closeMsg(){document.getElementById('msg').style.display='none';G.paused=false;}
+function closeMsg(){
+  document.getElementById('msg').style.display='none';
+  G.paused=false;
+  // Restore touch controls
+  const tc=document.getElementById('touch-controls');
+  if(tc) tc.style.pointerEvents='';
+}
 
 // ═══ ACHIEVEMENTS ════════════════════════════════════════════════
 let achTO;
@@ -1569,13 +1677,19 @@ function fly(){
   if(plane.position.y<=GY){
     plane.position.y=GY;
     if(!G.onGround){
-      const hard=G.velY<-7;
+      const vs=Math.abs(G.velY);
+      const crash = vs > 18; // fatal vertical speed
       G.onGround=true; G.velY=0;
+      if(crash){
+        triggerCrash('impact');
+        return;
+      }
+      const hard=vs>7;
       G.landings++;
       if(hard){
-        notify('Hard landing! 💥','#ff4060');
-        G.money=Math.max(0,G.money-500); // damage repair cost
-        notify('Repair bill: $500','#ff4060');
+        const dmg=Math.round(vs*80);
+        notify('Hard landing! 💥 -$'+dmg.toLocaleString(),'#ff4060');
+        G.money=Math.max(0,G.money-dmg);
       } else {
         notify('Smooth landing ✓','#00ff9d');
       }
@@ -1583,6 +1697,24 @@ function fly(){
       checkAchievements();
     }
     G.pitch=Math.max(0,G.pitch);
+  }
+
+  // Stall — too slow in air
+  if(!G.onGround){
+    const stallSpd=maxSpd*0.15;
+    if(G.spd<stallSpd&&G.alt>300){
+      G.velY-=0.6; // nose drops hard
+      if(G.spd<stallSpd*0.5){
+        G._stallWarn=(G._stallWarn||0)+1;
+        if(G._stallWarn===1) notify('⚠ STALL — Nose down!','#ff4060');
+        if(G._stallWarn>180) { triggerCrash('stall'); return; }
+      }
+    } else { G._stallWarn=0; }
+  }
+
+  // Wing strike — extreme roll very close to ground
+  if(!G.onGround && G.alt < 200 && Math.abs(G.roll) > 0.72 && G.spd > maxSpd*0.3){
+    triggerCrash('wing'); return;
   }
 
   // ═══ APPLY ROTATIONS — THE FIX ═══════════════════════════════
@@ -1799,7 +1931,7 @@ function openMenu(){
 }
 
 function openAchievements(){
-  let html='<div style="text-align:left;max-height:340px;overflow-y:auto">';
+  let html='<div style="text-align:left;max-height:min(340px,55vh);overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y">';
   ACHIEVEMENTS.forEach(a=>{
     const done=G.achievements.has(a.id);
     html+=`<div style="padding:7px 10px;margin-bottom:4px;border:1px solid ${done?'rgba(255,215,0,.35)':'rgba(0,180,255,.15)'};border-radius:4px;opacity:${done?1:.5}">
@@ -1823,7 +1955,7 @@ function genJobs(fromId){
 let pendingJobs=[],selJob=null;
 function openJobs(ap){
   pendingJobs=genJobs(ap.id); selJob=null;
-  let html=`<span style="color:#607a90">Select a job from ${ap.code}:</span><ul id="jlist" style="margin-top:8px">`;
+  let html=`<span style="color:#607a90">Select a job from ${ap.code}:</span><ul id="jlist" style="margin-top:8px;max-height:min(300px,50vh);overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y">`;
   pendingJobs.forEach((j,i)=>{
     const dest=AIRPORTS[j.dest];
     const km=Math.round(Math.hypot(dest.x-ap.x,dest.z-ap.z)/1000);
@@ -1863,7 +1995,7 @@ function checkArrival(){
 }
 
 function openShop(){
-  let html='<div style="max-height:380px;overflow-y:auto;text-align:left">';
+  let html='<div style="max-height:min(380px,55vh);overflow-y:auto;text-align:left;-webkit-overflow-scrolling:touch;touch-action:pan-y">';
   PLANES.forEach(p=>{
     const own=G.owned.includes(p.id), cur=G.planeId===p.id, canAfford=G.money>=p.price;
     html+=`<div class="sitem ${own?'owned':''}">
@@ -2365,8 +2497,20 @@ function setupTouch(){
   },{passive:false});
 
   // ── Global touch move ────────────────────────────────────────
+  function touchInScrollable(e){
+    let el=e.target;
+    while(el&&el!==document.body){
+      const s=window.getComputedStyle(el);
+      const ov=s.overflowY;
+      if((ov==='auto'||ov==='scroll')&&el.scrollHeight>el.clientHeight+2) return true;
+      el=el.parentElement;
+    }
+    return false;
+  }
   document.addEventListener('touchmove',e=>{
-    e.preventDefault();
+    const controlling=T.leftActive||T.rightActive||T.thrDragging;
+    // Allow scroll if touch is inside a scrollable element (modal, lists, etc.)
+    if(controlling&&!touchInScrollable(e)) e.preventDefault();
     for(const t of e.changedTouches){
       if(T.leftActive&&t.identifier===T.leftId){
         T.leftX=t.clientX; T.leftY=t.clientY;
