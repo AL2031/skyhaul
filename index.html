@@ -125,9 +125,39 @@ body{background:#000;color:#e0f0ff;font-family:'Share Tech Mono',monospace;overf
 #thr-up{position:absolute;bottom:300px;left:155px;width:44px;height:36px;pointer-events:all;background:rgba(0,8,24,0.7);border:1px solid rgba(0,180,255,0.3);border-radius:5px;color:rgba(0,200,255,0.7);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-user-select:none;user-select:none}
 #thr-down{position:absolute;bottom:258px;left:155px;width:44px;height:36px;pointer-events:all;background:rgba(0,8,24,0.7);border:1px solid rgba(0,180,255,0.3);border-radius:5px;color:rgba(0,200,255,0.7);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-user-select:none;user-select:none}
 
-/* ══════════════════════════════════════════
-   MOBILE RESPONSIVE OVERRIDES
-   ══════════════════════════════════════════ */
+/* ── Emergency vehicles & collapse effects ── */
+.emg-vehicle{position:fixed;bottom:0;font-size:22px;z-index:250;pointer-events:none;transition:left 8s linear}
+.smoke-puff{position:fixed;border-radius:50%;background:radial-gradient(circle,rgba(60,60,60,0.85),transparent);pointer-events:none;z-index:240;transform:translate(-50%,-50%)}
+.fire-flicker{position:fixed;border-radius:40% 60% 60% 40%;pointer-events:none;z-index:241;transform:translate(-50%,-50%);mix-blend-mode:screen}
+/* News ticker */
+#news-bar{position:fixed;bottom:0;left:0;right:0;height:28px;background:rgba(180,10,10,0.92);border-top:2px solid #ff2020;z-index:50;display:none;overflow:hidden;pointer-events:none}
+#news-ticker{display:flex;align-items:center;height:100%;white-space:nowrap;font-family:'Orbitron',sans-serif;font-size:10px;color:#fff;letter-spacing:1px;padding-left:90px;animation:ticker 40s linear infinite}
+@keyframes ticker{0%{transform:translateX(100vw)}100%{transform:translateX(-100%)}}
+#news-breaking{background:#ff2020;color:#fff;font-weight:bold;padding:0 10px;height:100%;display:flex;align-items:center;font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;position:absolute;left:0;z-index:2;white-space:nowrap}
+
+/* ── Airport labels overlay ── */
+#ap-labels{position:fixed;inset:0;pointer-events:none;z-index:9;overflow:hidden}
+.ap-label{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none}
+.ap-label-dot{width:8px;height:8px;border-radius:50%;background:#3a9aff;border:1.5px solid rgba(255,255,255,0.7);box-shadow:0 0 6px rgba(0,180,255,0.8)}
+.ap-label-dot.near{background:#00d4ff;box-shadow:0 0 10px #00d4ff}
+.ap-label-dot.dest{background:#00ff9d;box-shadow:0 0 10px #00ff9d;width:10px;height:10px}
+.ap-label-txt{font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(180,220,255,0.85);text-shadow:0 0 8px rgba(0,0,0,0.9),0 0 4px rgba(0,0,0,1);letter-spacing:1px;white-space:nowrap;background:rgba(0,5,16,0.55);padding:1px 4px;border-radius:2px}
+.ap-label-txt.near{color:#00d4ff}
+.ap-label-txt.dest{color:#00ff9d}
+.ap-label-dist{font-size:8px;color:rgba(100,160,220,0.6);text-shadow:0 0 4px rgba(0,0,0,1)}
+
+/* ── Instrument panel ── */
+#inst-panel{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:10px;pointer-events:none;z-index:10;transition:opacity .3s}
+#inst-toggle{position:fixed;bottom:10px;left:50%;transform:translateX(-50%) translateX(-130px);z-index:11;pointer-events:all}
+.inst-dial{width:90px;height:90px;border-radius:50%;background:radial-gradient(circle at 45% 40%,#0d1e35,#060f1c);border:2px solid rgba(0,180,255,0.4);position:relative;box-shadow:0 0 16px rgba(0,0,0,0.8),inset 0 0 20px rgba(0,0,0,0.6)}
+.inst-dial canvas{position:absolute;top:0;left:0;border-radius:50%}
+.inst-label{font-family:'Orbitron',sans-serif;font-size:7px;color:rgba(0,180,255,0.4);letter-spacing:2px;text-align:center;margin-top:3px;text-transform:uppercase}
+
+@media (max-width:700px){
+  #inst-panel{display:none}
+  #inst-toggle{display:none}
+  #ap-labels .ap-label-dist{display:none}
+}
 @media (max-width: 700px) {
   /* Show touch controls, hide keyboard hint */
   #touch-controls{display:block}
@@ -195,6 +225,36 @@ body{background:#000;color:#e0f0ff;font-family:'Share Tech Mono',monospace;overf
     <div class="abtn" id="ab-cam" ontouchstart="toggleCam()">CAM</div>
     <div class="abtn" id="ab-portal" ontouchstart="tryPortal()">WORLD</div>
   </div>
+</div>
+
+<div id="ap-labels"></div>
+
+<!-- Instrument panel toggle button -->
+<button class="btn" id="inst-toggle" onclick="toggleInstruments()" style="padding:5px 10px;font-size:8px;opacity:0.7">🎛 INST</button>
+
+<!-- Instrument panel: ADI, HSI, VSI, G-meter -->
+<div id="inst-panel">
+  <div>
+    <canvas class="inst-dial" id="adi-c" width="90" height="90"></canvas>
+    <div class="inst-label">ADI</div>
+  </div>
+  <div>
+    <canvas class="inst-dial" id="hsi-c" width="90" height="90"></canvas>
+    <div class="inst-label">HSI</div>
+  </div>
+  <div>
+    <canvas class="inst-dial" id="vsi-c" width="90" height="90"></canvas>
+    <div class="inst-label">VSI</div>
+  </div>
+  <div>
+    <canvas class="inst-dial" id="gm-c" width="90" height="90"></canvas>
+    <div class="inst-label">G-METER</div>
+  </div>
+</div>
+
+<div id="news-bar">
+  <div id="news-breaking">🔴 BREAKING</div>
+  <div id="news-ticker"></div>
 </div>
 
 <div id="load"><h1>SKY HAUL</h1><p>PILOT FOR HIRE</p><div class="lbg"><div class="lf"></div></div></div>
@@ -398,6 +458,14 @@ function beaconMat(){
   BEACONS.push(mat);
   return mat;
 }
+
+// ── Collision volumes & destructible towers ──────────────────────
+const COLLIDERS=[];  // {x,z,r,h,type,id}
+let _colliderId=0;
+const TOWER_STRUCTS={}; // id → {x,z,h,meshes:[],collapsed,stage,timer,screenX,screenY}
+
+// ── Incident news feed ───────────────────────────────────────────
+const NEWS_FEED=[]; // {time,headline,detail,world}
 // Street/area light points — show as small emissive spheres at night
 const STREET_LIGHTS=[];
 
@@ -431,6 +499,7 @@ function mtn(x,z,h,r,col){
     const cap=new THREE.Mesh(new THREE.ConeGeometry(r*.25,h*.2,8),bm(0xeeeeff));
     cap.position.set(x,h*.92,z); S.add(cap);
   }
+  COLLIDERS.push({x,z,r,h,type:'mountain',id:_colliderId++});
 }
 mtn(-170000,75000,40000,22000,0x7a6a55); mtn(-185000,100000,35000,19000,0x7a6a55);
 mtn(-150000,85000,27500,15000,0x8a7a65); mtn(-195000,60000,37500,21000,0x6a5a45);
@@ -518,14 +587,34 @@ function buildCity(def){
 
       const isGlass=isSky&&Math.random()>.4;
       const col=isGlass?GCOLS[Math.floor(Math.random()*GCOLS.length)]:BCOLS[Math.floor(Math.random()*BCOLS.length)];
+
+      // Tall buildings get a pivot group so collapse rotates from base
+      const bldGrp = (isSky||isTall) ? new THREE.Group() : null;
+      if(bldGrp){ bldGrp.position.set(bx,GY,bz); S.add(bldGrp); }
+
       const blk=new THREE.Mesh(new THREE.BoxGeometry(bw,bh,bd),bm(col));
-      blk.position.set(bx,bh/2,bz); blk.castShadow=true; S.add(blk);
+      blk.castShadow=true;
+      if(bldGrp){ blk.position.set(0,bh/2,0); bldGrp.add(blk); }
+      else { blk.position.set(bx,bh/2,bz); S.add(blk); }
+
+      // Register collider + TOWER_STRUCTS for skyscrapers and tall buildings
+      if(isSky||isTall){
+        const bid=_colliderId++;
+        const cr=Math.max(bw,bd)/2;
+        COLLIDERS.push({x:bx,z:bz,r:cr,h:bh,type:'tower',id:bid});
+        const bNames=['Tower','Plaza','Centre','Building','House','Point','Heights','Pinnacle'];
+        const bName=def.name+' '+bNames[Math.floor(Math.random()*bNames.length)];
+        TOWER_STRUCTS[bid]={x:bx,z:bz,h:bh,grp:bldGrp,collapsed:false,stage:0,
+          towerName:bName,_targetRZ:0,_targetRX:0,_curRZ:0,_curRX:0,
+          _fallDir:Math.random()*Math.PI*2};
+      }
 
       // Rooftop detail on taller buildings
       if(bh>400){
-        // AC unit
         const ac=new THREE.Mesh(new THREE.BoxGeometry(bw*.3,bh*.04,bd*.3),bm(0x555555));
-        ac.position.set(bx+(Math.random()-.5)*bw*.3,bh+bh*.02,bz+(Math.random()-.5)*bd*.3); S.add(ac);
+        const acPos={x:(Math.random()-.5)*bw*.3, y:bh+bh*.02, z:(Math.random()-.5)*bd*.3};
+        if(bldGrp){ ac.position.set(acPos.x,acPos.y,acPos.z); bldGrp.add(ac); }
+        else { ac.position.set(bx+acPos.x,acPos.y,bz+acPos.z); S.add(ac); }
       }
 
       // Window strips on tall buildings — glow at night
@@ -535,9 +624,15 @@ function buildCity(def){
           const lit=Math.random()>.3;
           const wmat=lit?nightMat(0x334455,0xffe880):bm(0x1a2233);
           const ws=new THREE.Mesh(new THREE.BoxGeometry(bw+2,22,4),wmat);
-          ws.position.set(bx,f*180+50,bz+bd/2+2); S.add(ws);
           const ws2=new THREE.Mesh(new THREE.BoxGeometry(bw+2,22,4),wmat.clone?wmat.clone():wmat);
-          ws2.rotation.y=Math.PI; ws2.position.set(bx,f*180+50,bz-bd/2-2); S.add(ws2);
+          ws2.rotation.y=Math.PI;
+          if(bldGrp){
+            ws.position.set(0,f*180+50,bd/2+2); bldGrp.add(ws);
+            ws2.position.set(0,f*180+50,-bd/2-2); bldGrp.add(ws2);
+          } else {
+            ws.position.set(bx,f*180+50,bz+bd/2+2); S.add(ws);
+            ws2.position.set(bx,f*180+50,bz-bd/2-2); S.add(ws2);
+          }
         }
       }
 
@@ -547,46 +642,73 @@ function buildCity(def){
         const wtop=new THREE.Mesh(new THREE.ConeGeometry(58,80,8),bm(0x552200));
         const wy=bh+70;
         const woffx=(Math.random()-.5)*bw*.4, woffz=(Math.random()-.5)*bd*.4;
-        wt.position.set(bx+woffx,wy,bz+woffz); S.add(wt);
-        wtop.position.set(bx+woffx,wy+110,bz+woffz); S.add(wtop);
-        // Water tower legs
-        for(let leg=0;leg<4;leg++){
-          const lx=Math.cos(leg*Math.PI/2)*35, lz=Math.sin(leg*Math.PI/2)*35;
-          const legm=new THREE.Mesh(new THREE.CylinderGeometry(5,5,60,6),bm(0x555555));
-          legm.position.set(bx+woffx+lx,bh+30,bz+woffz+lz); S.add(legm);
+        if(bldGrp){
+          wt.position.set(woffx,wy,woffz); bldGrp.add(wt);
+          wtop.position.set(woffx,wy+110,woffz); bldGrp.add(wtop);
+          for(let leg=0;leg<4;leg++){
+            const lx=Math.cos(leg*Math.PI/2)*35, lz2=Math.sin(leg*Math.PI/2)*35;
+            const legm=new THREE.Mesh(new THREE.CylinderGeometry(5,5,60,6),bm(0x555555));
+            legm.position.set(woffx+lx,bh+30,woffz+lz2); bldGrp.add(legm);
+          }
+        } else {
+          wt.position.set(bx+woffx,wy,bz+woffz); S.add(wt);
+          wtop.position.set(bx+woffx,wy+110,bz+woffz); S.add(wtop);
+          for(let leg=0;leg<4;leg++){
+            const lx=Math.cos(leg*Math.PI/2)*35, lz2=Math.sin(leg*Math.PI/2)*35;
+            const legm=new THREE.Mesh(new THREE.CylinderGeometry(5,5,60,6),bm(0x555555));
+            legm.position.set(bx+woffx+lx,bh+30,bz+woffz+lz2); S.add(legm);
+          }
         }
       }
 
       // Antenna mast on skyscrapers
       if(isSky&&Math.random()>.3){
         const ant=new THREE.Mesh(new THREE.CylinderGeometry(8,14,bh*.25,6),bm(0xaaaaaa));
-        ant.position.set(bx,bh+bh*.125,bz); S.add(ant);
-        const rb=new THREE.Mesh(new THREE.SphereGeometry(22,6,6),beaconMat());
-        rb.position.set(bx,bh+bh*.26,bz); S.add(rb);
+        const rb2=new THREE.Mesh(new THREE.SphereGeometry(22,6,6),beaconMat());
+        if(bldGrp){
+          ant.position.set(0,bh+bh*.125,0); bldGrp.add(ant);
+          rb2.position.set(0,bh+bh*.26,0); bldGrp.add(rb2);
+        } else {
+          ant.position.set(bx,bh+bh*.125,bz); S.add(ant);
+          rb2.position.set(bx,bh+bh*.26,bz); S.add(rb2);
+        }
       }
 
       // Helipad on some skyscrapers
       if(isSky&&Math.random()>.6){
         const hp=new THREE.Mesh(new THREE.CylinderGeometry(bw*.3,bw*.3,12,16),bm(0x333333));
-        hp.position.set(bx,bh+6,bz); S.add(hp);
         const hpH=new THREE.Mesh(new THREE.PlaneGeometry(bw*.25,bw*.25),bm(0xffffff));
-        hpH.rotation.x=-Math.PI/2; hpH.position.set(bx,bh+13,bz); S.add(hpH);
+        hpH.rotation.x=-Math.PI/2;
+        if(bldGrp){
+          hp.position.set(0,bh+6,0); bldGrp.add(hp);
+          hpH.position.set(0,bh+13,0); bldGrp.add(hpH);
+        } else {
+          hp.position.set(bx,bh+6,bz); S.add(hp);
+          hpH.position.set(bx,bh+13,bz); S.add(hpH);
+        }
       }
     }
   }
 
-  // Central landmark tower
+  // Central landmark tower — pivot group at base
   const th=7000+Math.random()*6000;
+  const lmkId=_colliderId++;
+  const lmkGrp=new THREE.Group();
+  lmkGrp.position.set(cx,GY,cz); S.add(lmkGrp);
+
   const twr=new THREE.Mesh(new THREE.CylinderGeometry(65,200,th,10),bm(0xaabbcc));
-  twr.position.set(cx,th/2,cz); twr.castShadow=true; S.add(twr);
-  // Observation deck
+  twr.position.set(0,th/2,0); twr.castShadow=true; lmkGrp.add(twr);
   const deck=new THREE.Mesh(new THREE.CylinderGeometry(350,290,200,12),bm(0x7799bb));
-  deck.position.set(cx,th*.62,cz); S.add(deck);
-  // Spire
+  deck.position.set(0,th*.62,0); lmkGrp.add(deck);
   const spi=new THREE.Mesh(new THREE.CylinderGeometry(10,22,th*.45,6),bm(0xcccccc));
-  spi.position.set(cx,th+th*.225,cz); S.add(spi);
-  const rb=new THREE.Mesh(new THREE.SphereGeometry(32,8,8),beaconMat());
-  rb.position.set(cx,th+th*.46,cz); S.add(rb);
+  spi.position.set(0,th+th*.225,0); lmkGrp.add(spi);
+  const lmkRb=new THREE.Mesh(new THREE.SphereGeometry(32,8,8),beaconMat());
+  lmkRb.position.set(0,th+th*.46,0); lmkGrp.add(lmkRb);
+
+  COLLIDERS.push({x:cx,z:cz,r:350,h:th+th*.5,type:'tower',id:lmkId});
+  TOWER_STRUCTS[lmkId]={x:cx,z:cz,h:th,grp:lmkGrp,collapsed:false,stage:0,
+    towerName:def.name+' Tower',_targetRZ:0,_targetRX:0,_curRZ:0,_curRX:0,
+    _fallDir:Math.random()*Math.PI*2};
 
   // Suspension bridge (if coastal city)
   if(def.cx>0&&def.cz<-100000){
@@ -834,15 +956,27 @@ function buildDesertCity(cx,cz){
 
 // ═══ BROADCAST TOWERS ════════════════════════════════════════════
 function radioTower(x,z,h){
+  const id=_colliderId++;
+  // Root group at BASE of tower — rotating this group pivots from ground
+  const grp=new THREE.Group();
+  grp.position.set(x,GY,z);
+  S.add(grp);
+
+  // Body: positioned relative to group origin (base = 0, top = h)
   const t=new THREE.Mesh(new THREE.CylinderGeometry(16,44,h,6),bm(0xbbbbcc));
-  t.position.set(x,h/2,z); t.castShadow=true; S.add(t);
+  t.position.set(0,h/2,0); t.castShadow=true; grp.add(t);
   [.33,.66,1].forEach(frac=>{
     const rb=new THREE.Mesh(new THREE.SphereGeometry(24,6,6),beaconMat());
-    rb.position.set(x,h*frac,z); S.add(rb);
+    rb.position.set(0,h*frac,0); grp.add(rb);
     const arm=new THREE.Mesh(new THREE.BoxGeometry(h*.24,14,14),bm(0xaaaaaa));
-    arm.position.set(x,h*frac,z); S.add(arm);
-    const arm2=arm.clone(); arm2.rotation.y=Math.PI/2; arm2.position.copy(arm.position); S.add(arm2);
+    arm.position.set(0,h*frac,0); grp.add(arm);
+    const arm2=arm.clone(); arm2.rotation.y=Math.PI/2; grp.add(arm2);
   });
+
+  COLLIDERS.push({x,z,r:120,h,type:'tower',id});
+  TOWER_STRUCTS[id]={x,z,h,grp,collapsed:false,stage:0,
+    // animated state
+    _targetRZ:0,_targetRX:0,_curRZ:0,_curRX:0,_fallDir:Math.random()*Math.PI*2};
 }
 radioTower(55000,12000,3800); radioTower(-80000,48000,4400);
 radioTower(172000,-32000,3600); radioTower(22000,-128000,3200);
@@ -1339,16 +1473,13 @@ function drawMM(){
     }
     mmx.fillStyle='rgba(180,215,240,.8)'; mmx.font='7px monospace'; mmx.fillText(ap.code,sx+6,sy-2);
   });
-  // Arrow: tip at (0,-11) local. rotate(PI - G.yaw) makes it point toward plane's travel direction.
-  //   yaw=0 → heading south (canvas +Y), rotate(PI) flips tip to (0,+11) = south ✓
-  //   yaw=PI/2 → heading east, rotate(PI/2) tip points east ✓
-  mmx.save(); mmx.translate(cx,cy); mmx.rotate(Math.PI - G.yaw);
-  mmx.fillStyle='#00ffff';
-  mmx.beginPath(); mmx.moveTo(0,-11); mmx.lineTo(-5,5); mmx.lineTo(0,3); mmx.lineTo(5,5); mmx.closePath();
-  mmx.fill();
-  mmx.strokeStyle='rgba(0,255,255,0.6)'; mmx.lineWidth=1.5;
-  mmx.beginPath(); mmx.moveTo(0,-11); mmx.lineTo(0,-14); mmx.stroke();
-  mmx.restore();
+  // Plane position — cyan dot with heading tick
+  mmx.beginPath(); mmx.arc(cx,cy,5,0,Math.PI*2);
+  mmx.fillStyle='#00ffff'; mmx.fill();
+  mmx.strokeStyle='rgba(0,255,255,0.9)'; mmx.lineWidth=1.5;
+  // heading tick from center outward
+  const tx=Math.sin(G.yaw)*10, ty=-Math.cos(G.yaw)*10;
+  mmx.beginPath(); mmx.moveTo(cx,cy); mmx.lineTo(cx+tx,cy+ty); mmx.stroke();
   mmx.strokeStyle='rgba(0,180,255,.28)'; mmx.lineWidth=1; mmx.strokeRect(0,0,MM,MM);
 }
 
@@ -1362,45 +1493,20 @@ function toggleCam(){
 
 // ═══ CRASH SYSTEM ════════════════════════════════════════════════
 function spawnCrashParticles(){
-  const N=28;
-  for(let i=0;i<N;i++){
-    const p=document.createElement('div');
-    const angle=Math.random()*Math.PI*2;
-    const speed=40+Math.random()*120;
-    const size=4+Math.random()*10;
-    const colors=['#ff4020','#ff8800','#ffcc00','#ff2200','#ffdd88','#cccccc'];
-    const col=colors[Math.floor(Math.random()*colors.length)];
-    p.style.cssText=`position:fixed;left:50%;top:50%;width:${size}px;height:${size}px;
-      border-radius:50%;background:${col};z-index:300;pointer-events:none;
-      transform:translate(-50%,-50%);opacity:1;transition:none`;
-    document.body.appendChild(p);
-    let x=0,y=0,vx=Math.cos(angle)*speed,vy=Math.sin(angle)*speed-60,t=0;
-    const tick=()=>{
-      t+=0.016; x+=vx*0.016; y+=vy*0.016; vy+=120*0.016;
-      p.style.transform=`translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
-      p.style.opacity=Math.max(0,1-t*1.2);
-      if(t<1.4) requestAnimationFrame(tick); else p.remove();
-    };
-    requestAnimationFrame(tick);
+  const px=plane.position.x, py=plane.position.y, pz=plane.position.z;
+  for(let i=0;i<22;i++){
+    const fireCol=i<8?0xff2200:i<15?0xff6600:0xffaa00;
+    spawn3DParticle(px+(Math.random()-.5)*200, py+100, pz+(Math.random()-.5)*200,
+      {size:80+Math.random()*120, col:fireCol, opacity:0.9,
+       vy:100+Math.random()*200, spread:300, decay:0.014, grow:1.03, gravity:-3});
   }
-  // Smoke trails
-  for(let i=0;i<6;i++){
-    setTimeout(()=>{
-      const s=document.createElement('div');
-      const ox=(Math.random()-.5)*80, oy=(Math.random()-.5)*80;
-      s.style.cssText=`position:fixed;left:calc(50% + ${ox}px);top:calc(50% + ${oy}px);
-        width:${20+Math.random()*30}px;height:${20+Math.random()*30}px;
-        border-radius:50%;background:rgba(80,80,80,0.6);z-index:299;pointer-events:none;
-        transform:translate(-50%,-50%);opacity:0.7;
-        transition:all 1.8s ease-out`;
-      document.body.appendChild(s);
-      requestAnimationFrame(()=>{
-        s.style.transform=`translate(-50%,-50%) scale(4)`;
-        s.style.opacity='0';
-      });
-      setTimeout(()=>s.remove(),1900);
-    },i*80);
+  for(let i=0;i<14;i++){
+    spawn3DParticle(px+(Math.random()-.5)*400, py+50, pz+(Math.random()-.5)*400,
+      {size:120+Math.random()*180, col:0x444444, opacity:0.7,
+       vy:50+Math.random()*100, spread:200, decay:0.004, grow:1.02, gravity:0});
   }
+  spawnDebris(px, py+50, pz, 12, 60);
+  spawn3DExplosion(px, py, pz, 400);
 }
 
 function nearestAirport(){
@@ -1433,6 +1539,8 @@ function triggerCrash(reason){
     stall:'Airspeed dropped to zero — fatal stall.',
     terrain:'Flew into the ground at speed.',
     wing:'Wing struck the ground — lost control.',
+    tower:'Flew into a broadcast tower.',
+    mountain:'Flew into a mountain.',
   };
   const penaltyPct=0.20;
   const penalty=Math.round(G.money*penaltyPct);
@@ -1457,6 +1565,417 @@ function triggerCrash(reason){
 }
 
 
+
+// ═══ 3D PARTICLE SYSTEM ══════════════════════════════════════════
+const PARTICLES=[]; // {mesh, vx,vy,vz, life, maxLife, shrink, gravity}
+
+function spawn3DParticle(x,y,z,opts={}){
+  const size=opts.size||200;
+  const col=opts.col||0x888888;
+  const geo=new THREE.SphereGeometry(size,5,4);
+  const mat=new THREE.MeshLambertMaterial({
+    color:col, transparent:true, opacity:opts.opacity||0.75,
+    depthWrite:false
+  });
+  const m=new THREE.Mesh(geo,mat);
+  m.position.set(x,y,z); S.add(m);
+  PARTICLES.push({
+    mesh:m, mat,
+    vx:(Math.random()-.5)*(opts.spread||400),
+    vy:opts.vy!=null?opts.vy:(80+Math.random()*200),
+    vz:(Math.random()-.5)*(opts.spread||400),
+    life:1.0,
+    decay:opts.decay||0.004,
+    grow:opts.grow||1.012,
+    gravity:opts.gravity!=null?opts.gravity:-1.5,
+    col,
+  });
+  return m;
+}
+
+function updateParticles(){
+  for(let i=PARTICLES.length-1;i>=0;i--){
+    const p=PARTICLES[i];
+    p.life-=p.decay;
+    if(p.life<=0){S.remove(p.mesh);p.mesh.geometry.dispose();p.mat.dispose();PARTICLES.splice(i,1);continue;}
+    p.vx*=0.985; p.vz*=0.985;
+    p.vy+=p.gravity;
+    p.mesh.position.x+=p.vx;
+    p.mesh.position.y+=p.vy;
+    p.mesh.position.z+=p.vz;
+    const s=p.grow;
+    p.mesh.scale.multiplyScalar(s);
+    p.mat.opacity=p.life*0.7;
+  }
+}
+
+// Persistent smoke column — stays at site, slowly rises
+const SMOKE_COLUMNS=[]; // {x,z,timer,meshes[]}
+function spawnSmokeColumn(x,z,height){
+  const col={x,z,timer:300,meshes:[],spawnT:0}; // 300s = 5 min
+  SMOKE_COLUMNS.push(col);
+  return col;
+}
+function updateSmokeColumns(dt){
+  for(let i=SMOKE_COLUMNS.length-1;i>=0;i--){
+    const col=SMOKE_COLUMNS[i];
+    col.timer-=dt;
+    col.spawnT-=dt;
+    if(col.spawnT<=0){
+      col.spawnT=0.18; // spawn puff every 0.18s
+      if(col.timer>0){
+        const spread=400, h=1500+Math.random()*2000;
+        spawn3DParticle(
+          col.x+(Math.random()-.5)*spread, GY+h*0.4, col.z+(Math.random()-.5)*spread,
+          {size:350+Math.random()*250,col:0x404040,opacity:0.55,
+           vy:60+Math.random()*80, spread:120, decay:0.0018, grow:1.018, gravity:0}
+        );
+      }
+    }
+    if(col.timer<=0) SMOKE_COLUMNS.splice(i,1);
+  }
+}
+
+// 3D debris chunks that fly out on collapse
+function spawnDebris(x,y,z,count,scale){
+  for(let i=0;i<count;i++){
+    const w=scale*(0.5+Math.random()), h2=scale*(0.5+Math.random()), d=scale*(0.5+Math.random());
+    const cols=[0x888888,0x667788,0x556677,0xaaaaaa,0x999988];
+    const geo=new THREE.BoxGeometry(w,h2,d);
+    const mat=new THREE.MeshLambertMaterial({color:cols[i%cols.length]});
+    const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); S.add(m);
+    const spd=600+Math.random()*1200;
+    const ang=Math.random()*Math.PI*2, elev=(Math.random()*.5+.1)*Math.PI;
+    PARTICLES.push({
+      mesh:m, mat,
+      vx:Math.cos(ang)*Math.cos(elev)*spd,
+      vy:Math.sin(elev)*spd,
+      vz:Math.sin(ang)*Math.cos(elev)*spd,
+      life:1.0, decay:0.003, grow:1.0, gravity:-18,
+      _isDebris:true, _rx:Math.random()*.1, _ry:Math.random()*.1,
+    });
+  }
+}
+
+// Big 3D explosion at impact point
+function spawn3DExplosion(x,y,z,scale){
+  // Fireball core
+  for(let i=0;i<20;i++){
+    const fireCol=i<8?0xff4400:i<14?0xff8800:0xffcc00;
+    spawn3DParticle(x,y,z,{
+      size:scale*(0.4+Math.random()*0.6), col:fireCol,
+      opacity:0.9, spread:scale*0.8,
+      vy:scale*(0.2+Math.random()*0.5),
+      decay:0.012, grow:1.025, gravity:-2
+    });
+  }
+  // Smoke ring
+  for(let i=0;i<16;i++){
+    const a=i*(Math.PI*2/16);
+    const r=scale*0.5;
+    spawn3DParticle(
+      x+Math.cos(a)*r, y, z+Math.sin(a)*r,
+      {size:scale*0.5, col:0x222222, opacity:0.6,
+       vy:30+Math.random()*60, spread:scale*0.6,
+       decay:0.003, grow:1.02, gravity:0}
+    );
+  }
+  // Shockwave ring (flat expanding disc)
+  const ringGeo=new THREE.RingGeometry(0,scale*0.1,32);
+  const ringMat=new THREE.MeshBasicMaterial({color:0xff8800,transparent:true,opacity:0.8,side:THREE.DoubleSide,depthWrite:false});
+  const ring=new THREE.Mesh(ringGeo,ringMat);
+  ring.rotation.x=-Math.PI/2; ring.position.set(x,GY+10,z); S.add(ring);
+  let ringT=0;
+  const ringAnim=()=>{
+    ringT+=0.04;
+    ring.scale.setScalar(1+ringT*12);
+    ringMat.opacity=Math.max(0,0.8-ringT);
+    if(ringT<1) requestAnimationFrame(ringAnim); else {S.remove(ring);ringGeo.dispose();ringMat.dispose();}
+  };
+  requestAnimationFrame(ringAnim);
+}
+
+// 3D emergency vehicles — simple colored box cars
+const EMG_VEHICLES_3D=[];
+function spawnEmergency3D(tx,tz){
+  const types=[
+    {col:0x1144ff,top:0x3366ff,light:0xff0000}, // police
+    {col:0xffffff,top:0xff6600,light:0xff6600}, // ambulance
+    {col:0xff3300,top:0xff3300,light:0xffffff}, // fire
+    {col:0x1144ff,top:0x3366ff,light:0x0000ff},
+    {col:0xffffff,top:0xff6600,light:0xff0000},
+  ];
+  types.forEach((t,i)=>{
+    setTimeout(()=>{
+      const grp=new THREE.Group();
+      // Random starting position far from target
+      const ang=Math.random()*Math.PI*2;
+      const startDist=8000+Math.random()*4000;
+      const sx=tx+Math.cos(ang)*startDist, sz=tz+Math.sin(ang)*startDist;
+      grp.position.set(sx,GY,sz);
+
+      // Car body
+      const body=new THREE.Mesh(new THREE.BoxGeometry(220,100,400),new THREE.MeshLambertMaterial({color:t.col}));
+      body.position.y=50; grp.add(body);
+      // Cab top
+      const cab=new THREE.Mesh(new THREE.BoxGeometry(180,80,200),new THREE.MeshLambertMaterial({color:t.top}));
+      cab.position.set(0,130,-50); grp.add(cab);
+      // Wheels
+      [[90,0,150],[90,0,-150],[-90,0,150],[-90,0,-150]].forEach(([wx,wy,wz])=>{
+        const w=new THREE.Mesh(new THREE.CylinderGeometry(36,36,30,10),new THREE.MeshLambertMaterial({color:0x111111}));
+        w.rotation.z=Math.PI/2; w.position.set(wx,36,wz); grp.add(w);
+      });
+      // Light bar
+      const lb=new THREE.Mesh(new THREE.BoxGeometry(160,20,60),new THREE.MeshLambertMaterial({color:t.light,emissive:t.light,emissiveIntensity:0.8}));
+      lb.position.set(0,175,-40); grp.add(lb);
+
+      S.add(grp);
+      // Aim toward target
+      const dx=tx-sx, dz=tz-sz;
+      grp.rotation.y=Math.atan2(dx,dz);
+
+      EMG_VEHICLES_3D.push({grp, tx, tz, speed:280+Math.random()*80, arrived:false, life:240});
+    }, i*800);
+  });
+}
+
+function updateEmgVehicles(dt){
+  for(let i=EMG_VEHICLES_3D.length-1;i>=0;i--){
+    const v=EMG_VEHICLES_3D[i];
+    v.life-=dt;
+    if(v.life<=0){S.remove(v.grp);EMG_VEHICLES_3D.splice(i,1);continue;}
+    if(!v.arrived){
+      const dx=v.tx-v.grp.position.x, dz=v.tz-v.grp.position.z;
+      const dist=Math.hypot(dx,dz);
+      if(dist<600){v.arrived=true;}
+      else {
+        const spd=v.speed;
+        v.grp.position.x+=dx/dist*spd;
+        v.grp.position.z+=dz/dist*spd;
+        v.grp.rotation.y=Math.atan2(dx,dz);
+        // Bounce/bob
+        v.grp.position.y=GY+Math.abs(Math.sin(Date.now()*0.02))*8;
+      }
+      // Flash light bar
+      const lb=v.grp.children[4];
+      if(lb) lb.material.emissiveIntensity=0.5+Math.sin(Date.now()*0.012)*0.5;
+    }
+  }
+}
+
+// ═══ TOWER COLLAPSE SYSTEM (3D PHYSICS) ══════════════════════════
+function towerStrike(id){
+  const tw=TOWER_STRUCTS[id];
+  if(!tw||tw.collapsed||tw.stage>0) return;
+  tw.stage=1;
+  const worldNames={1:'Temperate Region',2:'Arctic Tundra',3:'Desert Canyon'};
+  if(!tw.towerName){
+    const names=['KTWR-1','WBCX Tower','Regional Relay','NorthLink Tower','SkyNet Array','CoastBroadcast','Highland Relay','EastPoint Tower'];
+    tw.towerName=names[id%names.length];
+  }
+
+  // UPPER EXPLOSION — fireball erupts from impact zone (upper 30% of tower)
+  const impactY = GY + tw.h * 0.72;
+  spawn3DExplosion(tw.x, impactY, tw.z, tw.h * 0.15);
+  // Secondary blasts walking up the side
+  for(let i=0;i<6;i++){
+    setTimeout(()=>{
+      spawn3DExplosion(tw.x+(Math.random()-.5)*180, GY+tw.h*(0.55+Math.random()*0.38), tw.z+(Math.random()-.5)*180, tw.h*0.055);
+    }, i*280+150);
+  }
+  // Fire/smoke pouring from upper floors
+  for(let i=0;i<20;i++){
+    setTimeout(()=>{
+      const frac=0.48+Math.random()*0.45;
+      spawn3DParticle(tw.x+(Math.random()-.5)*380, GY+tw.h*frac, tw.z+(Math.random()-.5)*380,
+        {size:tw.h*(0.03+Math.random()*0.025), col:i%3===0?0xff4400:i%3===1?0xff8800:0x282828,
+         opacity:0.88, vy:80+Math.random()*160, spread:tw.h*0.08, decay:0.004, grow:1.02, gravity:0.3});
+    }, i*160);
+  }
+
+  tw._collapseSpeed=0;
+  tw._collapseProgress=0;
+  tw._dustRingTimer=0;
+
+  addNews('BREAKING: Aircraft strikes '+tw.towerName+' — massive explosion',
+    'Upper floors engulfed. Structure integrity compromised. Emergency services scrambling.', G.currentWorld);
+
+  setTimeout(()=>spawnEmergency3D(tw.x, tw.z), 2500);
+
+  // After 3.5s burning — pancake collapse begins
+  setTimeout(()=>{
+    if(tw.stage<1) return;
+    tw.stage=2;
+    tw._collapseSpeed=0.0003;
+    addNews('COLLAPSE BEGINS: '+tw.towerName+' — pancake failure',
+      'Structure failing floor by floor. 1km evacuation zone ordered.', G.currentWorld);
+  }, 3500);
+}
+
+function collapseStage(id,stage){}
+
+function updateTowerCollapses(dt){
+  for(const id in TOWER_STRUCTS){
+    const tw=TOWER_STRUCTS[id];
+    if(tw.stage===0) continue;
+
+    if(tw.collapsed){
+      tw._respawnTimer=(tw._respawnTimer||0)+dt;
+      if(tw._respawnTimer>=300) respawnTower(id);
+      continue;
+    }
+
+    // Stage 1: burning only, no collapse yet
+    if(tw.stage===1){
+      if(Math.random()<0.25){
+        const frac=0.45+Math.random()*0.5;
+        spawn3DParticle(tw.x+(Math.random()-.5)*300, GY+tw.h*frac, tw.z+(Math.random()-.5)*300,
+          {size:tw.h*0.022, col:Math.random()<0.4?0xff5500:0x2a2a2a,
+           opacity:0.75, vy:50+Math.random()*80, spread:200, decay:0.005, grow:1.018, gravity:0.2});
+      }
+      continue;
+    }
+
+    // Stage 2: PANCAKE — pure vertical, no rotation
+    tw._collapseSpeed += 0.00016 * (1 + tw._collapseProgress * 5);
+    tw._collapseProgress += tw._collapseSpeed;
+    const remaining = Math.max(0, 1 - tw._collapseProgress);
+    tw.grp.scale.y = remaining;
+    tw.grp.rotation.set(0,0,0); // absolutely no tipping
+
+    const frontY = GY + tw.h * remaining;
+
+    // Dust rings blasting outward from collapse front
+    tw._dustRingTimer += dt;
+    if(tw._dustRingTimer > 0.055){
+      tw._dustRingTimer = 0;
+      const ringCount = 18;
+      for(let i=0;i<ringCount;i++){
+        const a = i*(Math.PI*2/ringCount)+Math.random()*0.25;
+        const spd = 900+Math.random()*700;
+        const p = {
+          mesh: null,
+          vx: Math.cos(a)*spd, vy: 15+Math.random()*50, vz: Math.sin(a)*spd,
+          life:1.0, decay:0.0016+Math.random()*0.001, grow:1.028, gravity:0.15,
+          col:Math.random()<0.5?0xaa8855:0x777777
+        };
+        const sz=tw.h*(0.045+Math.random()*0.04);
+        const geo=new THREE.SphereGeometry(sz,5,4);
+        const mat=new THREE.MeshLambertMaterial({color:p.col,transparent:true,opacity:0.72,depthWrite:false});
+        const m=new THREE.Mesh(geo,mat); 
+        m.position.set(tw.x+Math.cos(a)*tw.h*0.03, frontY+(Math.random()-.5)*tw.h*0.04, tw.z+Math.sin(a)*tw.h*0.03);
+        S.add(m);
+        p.mesh=m; p.mat=mat;
+        PARTICLES.push(p);
+      }
+      // Debris at collapse front
+      if(Math.random()<0.55) spawnDebris(tw.x, frontY, tw.z, 5, tw.h*0.022);
+      // Rising fire/smoke from core
+      if(Math.random()<0.45){
+        spawn3DParticle(tw.x+(Math.random()-.5)*150, frontY+tw.h*0.04, tw.z+(Math.random()-.5)*150,
+          {size:tw.h*0.038, col:Math.random()<0.35?0xff4400:0x1a1a1a,
+           opacity:0.82, vy:140+Math.random()*220, spread:120, decay:0.003, grow:1.022, gravity:-0.8});
+      }
+    }
+
+    // GROUND IMPACT — full collapse complete
+    if(tw._collapseProgress>=1 && !tw._hitGround){
+      tw._hitGround=true; tw.collapsed=true; tw._respawnTimer=0;
+      tw.grp.scale.y=0.01;
+
+      // Massive ground-level explosion
+      spawn3DExplosion(tw.x, GY+60, tw.z, tw.h*0.2);
+
+      // Giant dust hemisphere
+      for(let j=0;j<70;j++){
+        const ang=Math.random()*Math.PI*2;
+        const rad=Math.random()*tw.h*0.55;
+        const dustCol=j<25?0x775533:j<50?0x888888:0x444444;
+        spawn3DParticle(
+          tw.x+Math.cos(ang)*rad, GY+40, tw.z+Math.sin(ang)*rad,
+          {size:tw.h*(0.08+Math.random()*0.09), col:dustCol,
+           opacity:0.88, vy:180+Math.random()*600, spread:tw.h*0.5,
+           decay:0.0007+Math.random()*0.0005, grow:1.03, gravity:-2}
+        );
+      }
+      spawnDebris(tw.x, GY+tw.h*0.25, tw.z, 50, tw.h*0.055);
+      spawnSmokeColumn(tw.x, tw.z, tw.h);
+
+      addNews('COLLAPSE COMPLETE: '+tw.towerName+' — total destruction',
+        'Pancake collapse. Massive dust cloud. Rescue teams deploying into rubble.', G.currentWorld);
+    }
+  }
+}
+
+function respawnTower(id){
+  const tw=TOWER_STRUCTS[id];
+  if(!tw) return;
+  tw.stage=0; tw.collapsed=false; tw._hitGround=false;
+  tw._collapseProgress=0; tw._collapseSpeed=0; tw._respawnTimer=0;
+  tw.grp.scale.y=1; tw.grp.rotation.set(0,0,0);
+  notify((tw.towerName||'Tower')+' has been rebuilt','#00d4ff');
+}
+
+// Old CSS smoke (kept for crash particles, replaced for tower)
+function spawnSmoke3D(wx,wy,wz,count,withFire){
+  // Use 3D particles instead
+  for(let i=0;i<count;i++){
+    spawn3DParticle(wx+(Math.random()-.5)*500, wy, wz+(Math.random()-.5)*500,{
+      size:300+Math.random()*200, col:withFire&&Math.random()<.4?0x884400:0x555555,
+      opacity:0.7, vy:60+Math.random()*120, spread:300, decay:0.003, grow:1.018, gravity:0
+    });
+  }
+}
+
+// Spawn police cars and ambulances (CSS fallback for non-tower crashes)
+function spawnEmergencyResponse(wx,wz){
+  spawnEmergency3D(wx,wz);
+}
+
+// ═══ NEWS SYSTEM ══════════════════════════════════════════════════
+function addNews(headline,detail,world){
+  const now=new Date();
+  const ts=`${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+  NEWS_FEED.unshift({headline,detail,world,ts});
+  if(NEWS_FEED.length>20) NEWS_FEED.pop();
+  updateNewsTicker();
+}
+
+function updateNewsTicker(){
+  const bar=document.getElementById('news-bar');
+  const ticker=document.getElementById('news-ticker');
+  if(!NEWS_FEED.length){bar.style.display='none';return;}
+  bar.style.display='block';
+  ticker.style.animation='none';
+  const text=NEWS_FEED.map(n=>`  ◆  ${n.ts}  ${n.headline}`).join('  ');
+  ticker.textContent=text;
+  // restart animation
+  void ticker.offsetWidth;
+  ticker.style.animation='ticker 40s linear infinite';
+}
+
+function openNews(){
+  if(!NEWS_FEED.length){
+    showMsg('📰 News Feed','<span style="color:#607a90">No incidents reported. Keep flying safely!</span>',[{t:'← Back',a:openMenu},{t:'✕ Close',c:'rbtn',a:closeMsg}]);
+    return;
+  }
+  const wIcon={1:'🌍',2:'❄️',3:'🏜️'};
+  let html='<div style="text-align:left;max-height:min(360px,58vh);overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y">';
+  NEWS_FEED.forEach(n=>{
+    html+=`<div style="padding:9px 11px;margin-bottom:6px;border:1px solid rgba(255,30,30,0.35);border-radius:5px;background:rgba(60,0,0,0.3)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="color:#ff6060;font-size:10px;letter-spacing:1px;font-family:Orbitron,monospace">${wIcon[n.world]||''} WORLD ${n.world}</span>
+        <span style="color:#607a90;font-size:9px">${n.ts}</span>
+      </div>
+      <div style="color:#ffcccc;font-size:11px;font-weight:bold;margin-bottom:3px">${n.headline}</div>
+      <div style="color:#a08080;font-size:10px;line-height:1.4">${n.detail}</div>
+    </div>`;
+  });
+  html+='</div>';
+  showMsg('📰 Incident News Feed',html,[{t:'← Back',a:openMenu},{t:'✕ Close',c:'rbtn',a:closeMsg}]);
+}
+
+let nTO;
 function notify(txt,col){
   col=col||'#00ff9d';
   const e=document.getElementById('notif');
@@ -1725,6 +2244,28 @@ function fly(){
     triggerCrash('wing'); return;
   }
 
+  // ── Tower & mountain collision ─────────────────────────────────
+  if(!G.onGround){
+    const px=plane.position.x, py=plane.position.y, pz=plane.position.z;
+    for(const c of COLLIDERS){
+      if(c.world && c.world!==G.currentWorld) continue;
+      const hdist=Math.hypot(px-c.x, pz-c.z);
+      if(c.type==='tower'){
+        if(hdist<c.r && py<c.h+GY && py>GY+50){
+          if(c.type==='tower') towerStrike(c.id);
+          triggerCrash('tower'); return;
+        }
+      } else if(c.type==='mountain'){
+        // Cone: at height y, radius narrows linearly from c.r at base to 0 at peak
+        const altAbove=py-GY;
+        if(altAbove<c.h){
+          const radiusAtAlt=c.r*(1-(altAbove/c.h));
+          if(hdist<radiusAtAlt){ triggerCrash('mountain'); return; }
+        }
+      }
+    }
+  }
+
   // ═══ APPLY ROTATIONS — THE FIX ═══════════════════════════════
   // Step 1: ensure order is set (defensive, also set in buildPlane)
   plane.rotation.order='YXZ';
@@ -1755,9 +2296,9 @@ function fly(){
     }
   }
 
-  // Nearest airport
+  // Nearest airport (current world only)
   G.nearAP=null; let best=AP_R;
-  AIRPORTS.forEach(ap=>{
+  ALL_AIRPORTS.filter(a=>a.world===G.currentWorld).forEach(ap=>{
     const d=Math.hypot(plane.position.x-ap.x,plane.position.z-ap.z);
     if(d<best){G.nearAP=ap;best=d;}
   });
@@ -1896,9 +2437,13 @@ function driftClouds(){
 }
 
 // ═══ MAIN LOOP ═══════════════════════════════════════════════════
+let _lastT=performance.now();
 function loop(){
   requestAnimationFrame(loop);
+  const now=performance.now(), dt=Math.min((now-_lastT)/1000, 0.05); _lastT=now;
   fly(); updateHUD(); updateDayNight(); atmos(); driftClouds(); drawMM(); updateWeather();
+  updateApLabels(); drawInstruments();
+  updateTowerCollapses(dt); updateParticles(); updateSmokeColumns(dt); updateEmgVehicles(dt);
   R.render(S,CAM);
 }
 
@@ -1918,6 +2463,7 @@ function openMenu(){
         {t:'⛽ Refuel (R)',a:refuel},
         {t:'🌐 World Portal (X)',a:tryPortal},
         {t:'🏆 Awards',a:openAchievements},
+        {t:'📰 News',a:openNews},
         {t:'✈ Take Off',c:'gbtn',a:closeMsg},
         {t:'💾 Save',a:()=>{saveGame();notify('Saved ✓','#00ff9d');closeMsg();openMenu();}},
         {t:'✕ Close',c:'rbtn',a:closeMsg},
@@ -1930,6 +2476,7 @@ function openMenu(){
       [
         {t:'🛩 Hangar',a:openShop},
         {t:'🏆 Awards',a:openAchievements},
+        {t:'📰 News',a:openNews},
         {t:'✈ Resume',c:'gbtn',a:closeMsg},
         {t:'💾 Save',a:()=>{saveGame();notify('Saved ✓','#00ff9d');closeMsg();}},
         {t:'✕ Close',c:'rbtn',a:closeMsg},
@@ -1951,25 +2498,34 @@ function openAchievements(){
   showMsg('🏆 Achievements',html,[{t:'← Back',a:openMenu},{t:'✕ Close',c:'rbtn',a:closeMsg}]);
 }
 
-function genJobs(fromId){
-  const from=AIRPORTS[fromId];
-  return AIRPORTS.filter(a=>a.id!==fromId).sort(()=>Math.random()-.5).slice(0,5).map(dest=>{
-    const dist=Math.hypot(dest.x-from.x,dest.z-from.z);
-    const pay=Math.round(dist*(0.04+Math.random()*.04)*(1+G.planeId*.15));
-    return{type:JOB_TYPES[Math.floor(Math.random()*JOB_TYPES.length)],dest:dest.id,pay};
-  });
+function genJobs(fromAp){
+  // Generate jobs to destinations across ALL worlds
+  const from = typeof fromAp==='number' ? ALL_AIRPORTS.find(a=>a.id===fromAp)||AIRPORTS[fromAp] : fromAp;
+  return ALL_AIRPORTS
+    .filter(a=>a.id!==from.id)
+    .sort(()=>Math.random()-.5)
+    .slice(0,7)
+    .map(dest=>{
+      const dist=Math.hypot(dest.x-from.x,dest.z-from.z)+Math.abs(dest.world-from.world)*180000;
+      const crossWorld=dest.world!==from.world;
+      const bonus=crossWorld?1.8:1;
+      const pay=Math.round(dist*(0.04+Math.random()*.04)*(1+G.planeId*.15)*bonus);
+      return{type:JOB_TYPES[Math.floor(Math.random()*JOB_TYPES.length)],destId:dest.id,pay,crossWorld,destWorld:dest.world};
+    });
 }
 
 let pendingJobs=[],selJob=null;
 function openJobs(ap){
-  pendingJobs=genJobs(ap.id); selJob=null;
+  pendingJobs=genJobs(ap); selJob=null;
+  const WICON={1:'🌍',2:'❄️',3:'🏜'};
   let html=`<span style="color:#607a90">Select a job from ${ap.code}:</span><ul id="jlist" style="margin-top:8px;max-height:min(300px,50vh);overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y">`;
   pendingJobs.forEach((j,i)=>{
-    const dest=AIRPORTS[j.dest];
+    const dest=ALL_AIRPORTS.find(a=>a.id===j.destId);
     const km=Math.round(Math.hypot(dest.x-ap.x,dest.z-ap.z)/1000);
+    const xw=j.crossWorld?`<span style="color:#ffd700;font-size:9px"> ${WICON[j.destWorld]} W${j.destWorld} BONUS</span>`:'';
     html+=`<li data-i="${i}">
       <span style="color:#00d4ff">${j.type}</span><span class="jpay">$${j.pay.toLocaleString()}</span><br>
-      <span style="font-size:10px;color:#607a90">${ap.code} → ${dest.code}: ${dest.name} (~${km} km)</span>
+      <span style="font-size:10px;color:#607a90">${ap.code} → ${dest.code}: ${dest.name} (~${km} km)</span>${xw}
     </li>`;
   });
   html+='</ul>';
@@ -1992,10 +2548,11 @@ function openJobs(ap){
 }
 
 function doAcceptJob(job){
-  G.job=job; G.destAP=AIRPORTS[job.dest]; G.jobActive=true; closeMsg();
-  document.getElementById('hDest').textContent=G.destAP.code+' — '+G.destAP.name;
+  const dest=ALL_AIRPORTS.find(a=>a.id===job.destId);
+  G.job=job; G.destAP=dest; G.jobActive=true; closeMsg();
+  document.getElementById('hDest').textContent=dest.code+' — '+dest.name+(job.crossWorld?` (W${job.destWorld})`:'');
   document.getElementById('hDest').style.color='#00ff9d';
-  notify('Job accepted! Fly to '+G.destAP.code,'#00d4ff');
+  notify('Job accepted! Fly to '+dest.code+(job.crossWorld?' via portal':''),'#00d4ff');
 }
 
 function checkArrival(){
@@ -2392,7 +2949,7 @@ function loadGame(){
     document.getElementById('worldBadge').textContent=wn[G.currentWorld]||wn[1];
     plane.position.set(d.px||0, d.py||GY, d.pz||3000);
     if(d.jobActive&&d.destId!==null&&d.job){
-      G.jobActive=true; G.destAP=AIRPORTS[d.destId]; G.job=d.job;
+      G.jobActive=true; G.destAP=ALL_AIRPORTS.find(a=>a.id===d.destId)||AIRPORTS[0]; G.job=d.job;
       document.getElementById('hDest').textContent=G.destAP.code+' — '+G.destAP.name;
       document.getElementById('hDest').style.color='#00ff9d';
     }
@@ -2451,7 +3008,262 @@ function showWelcome(){
   );
 }
 
-// ═══ MOBILE TOUCH CONTROLS ════════════════════════════════════════
+// ═══ AIRPORT LABELS (3D→2D projection) ════════════════════════════
+const _apLabelEls={};
+function updateApLabels(){
+  const w=innerWidth, h=innerHeight;
+  const pad=24; // margin from screen edge for clamped labels
+  ALL_AIRPORTS.filter(ap=>ap.world===G.currentWorld).forEach(ap=>{
+    let el=_apLabelEls[ap.id];
+    if(!el){
+      el=document.createElement('div'); el.className='ap-label';
+      el.innerHTML=`<div class="ap-label-dot" id="apd${ap.id}"></div><div class="ap-label-txt" id="apt${ap.id}">${ap.code}</div><div class="ap-label-dist" id="apk${ap.id}"></div>`;
+      document.getElementById('ap-labels').appendChild(el);
+      _apLabelEls[ap.id]=el;
+    }
+    // Project world position to screen - ignore far plane, only cull if behind camera
+    const v=new THREE.Vector3(ap.x, 200, ap.z);
+    // Check if behind camera using camera-space Z (positive Z = behind in Three.js)
+    const camSpace=v.clone().applyMatrix4(CAM.matrixWorldInverse);
+    if(camSpace.z > 0){ el.style.display='none'; return; }
+    // Project to NDC using full VP matrix (x,y valid regardless of far plane)
+    v.project(CAM);
+    let sx=(v.x*0.5+0.5)*w, sy=(-v.y*0.5+0.5)*h;
+    // Clamp to screen edges so off-screen airports still show as edge indicators
+    sx=Math.max(pad, Math.min(w-pad, sx));
+    sy=Math.max(pad, Math.min(h-pad, sy));
+    el.style.display='flex';
+    el.style.left=sx+'px'; el.style.top=sy+'px';
+    const dist=Math.hypot(plane.position.x-ap.x,plane.position.z-ap.z);
+    const km=Math.round(dist/1000);
+    const isNear=G.nearAP&&G.nearAP.id===ap.id;
+    const isDest=G.destAP&&G.destAP.id===ap.id;
+    const dotEl=document.getElementById('apd'+ap.id);
+    const txtEl=document.getElementById('apt'+ap.id);
+    const kmEl=document.getElementById('apk'+ap.id);
+    dotEl.className='ap-label-dot'+(isDest?' dest':isNear?' near':'');
+    txtEl.className='ap-label-txt'+(isDest?' dest':isNear?' near':'');
+    // Fade by distance but keep minimum opacity of 0.4
+    const fade=Math.max(0.4, Math.min(1, 1-(dist-20000)/350000));
+    el.style.opacity=fade;
+    txtEl.textContent=ap.code+(isNear?' ✦':isDest?' ◎':'');
+    kmEl.textContent=km>0?km+' km':'';
+  });
+  // Hide labels for other worlds
+  ALL_AIRPORTS.filter(ap=>ap.world!==G.currentWorld).forEach(ap=>{
+    if(_apLabelEls[ap.id]) _apLabelEls[ap.id].style.display='none';
+  });
+}
+
+// ═══ INSTRUMENT PANEL ══════════════════════════════════════════════
+let instVisible=true;
+function toggleInstruments(){
+  instVisible=!instVisible;
+  document.getElementById('inst-panel').style.opacity=instVisible?'1':'0';
+  document.getElementById('inst-panel').style.pointerEvents=instVisible?'none':'none';
+  document.getElementById('inst-toggle').textContent=instVisible?'🎛 INST':'🎛 INST';
+  document.getElementById('inst-toggle').style.opacity=instVisible?'0.7':'0.35';
+}
+
+const _ic={
+  adi: document.getElementById('adi-c').getContext('2d'),
+  hsi: document.getElementById('hsi-c').getContext('2d'),
+  vsi: document.getElementById('vsi-c').getContext('2d'),
+  gm:  document.getElementById('gm-c').getContext('2d'),
+};
+let _prevAlt=0, _gForce=1;
+
+function drawInstruments(){
+  if(!instVisible) return;
+  const S2=90, C=45, R=42;
+
+  // ── ADI: Attitude Director Indicator ──────────────────────────
+  // Shows pitch (horizon line) and roll (bank angle)
+  const ax=_ic.adi;
+  ax.clearRect(0,0,S2,S2);
+  ax.save();
+  ax.beginPath(); ax.arc(C,C,R,0,Math.PI*2); ax.clip();
+  // Sky / ground split tilted by roll and shifted by pitch
+  const pitchPx = -G.pitch * 120; // NEGATIVE: pitch up → horizon moves down (more sky visible)
+  ax.save();
+  ax.translate(C,C); ax.rotate(-G.roll); // ball rotates opposite to roll (CCW for right bank)
+  // Sky
+  ax.fillStyle='#1a4a8a'; ax.fillRect(-R,-R-pitchPx,R*2,R*2);
+  // Ground
+  ax.fillStyle='#5c3310'; ax.fillRect(-R,-pitchPx,R*2,R*2);
+  // Horizon line
+  ax.strokeStyle='rgba(255,255,255,0.9)'; ax.lineWidth=1.5;
+  ax.beginPath(); ax.moveTo(-R,-pitchPx); ax.lineTo(R,-pitchPx); ax.stroke();
+  // Pitch ladder
+  ax.strokeStyle='rgba(255,255,255,0.45)'; ax.lineWidth=0.8; ax.font='6px monospace'; ax.fillStyle='white'; ax.textAlign='center';
+  [-20,-10,10,20].forEach(deg=>{
+    const y=-pitchPx - deg*(120/57.3);
+    const len=deg%20===0?14:8;
+    ax.beginPath(); ax.moveTo(-len/2,y); ax.lineTo(len/2,y); ax.stroke();
+    if(Math.abs(deg)===20) ax.fillText(Math.abs(deg),len/2+6,y+2);
+  });
+  ax.restore();
+  // Bank angle arc
+  ax.strokeStyle='rgba(255,200,50,0.7)'; ax.lineWidth=1.2;
+  ax.beginPath(); ax.arc(C,C,R-3,-Math.PI+0.2,-0.2); ax.stroke();
+  // Bank pointer — rotates SAME direction as roll (right bank → pointer moves right)
+  ax.save(); ax.translate(C,C); ax.rotate(G.roll);
+  ax.fillStyle='#ffd700';
+  ax.beginPath(); ax.moveTo(0,-(R-3)); ax.lineTo(-4,-(R-9)); ax.lineTo(4,-(R-9)); ax.closePath(); ax.fill();
+  ax.restore();
+  // Fixed aircraft symbol
+  ax.strokeStyle='#ffd700'; ax.lineWidth=1.5;
+  ax.beginPath(); ax.moveTo(C-14,C); ax.lineTo(C-6,C); ax.lineTo(C-6,C+4);
+  ax.moveTo(C+14,C); ax.lineTo(C+6,C); ax.lineTo(C+6,C+4);
+  ax.moveTo(C-3,C); ax.lineTo(C+3,C); ax.stroke();
+  // Center dot
+  ax.fillStyle='#ffd700'; ax.beginPath(); ax.arc(C,C,2,0,Math.PI*2); ax.fill();
+  ax.restore();
+  // Bezel
+  ax.strokeStyle='rgba(0,180,255,0.5)'; ax.lineWidth=2;
+  ax.beginPath(); ax.arc(C,C,R,0,Math.PI*2); ax.stroke();
+
+  // ── HSI: Horizontal Situation Indicator (compass rose) ────────
+  const hx=_ic.hsi;
+  hx.clearRect(0,0,S2,S2);
+  hx.save();
+  hx.beginPath(); hx.arc(C,C,R,0,Math.PI*2); hx.clip();
+  hx.fillStyle='#080e1a'; hx.fillRect(0,0,S2,S2);
+  // Rotating compass rose
+  const hdgRad = -G.yaw; // already in radians, negate for north-up
+  hx.save(); hx.translate(C,C); hx.rotate(hdgRad);
+  hx.strokeStyle='rgba(0,180,255,0.5)'; hx.lineWidth=0.8;
+  for(let i=0;i<36;i++){
+    const a=i*(Math.PI/18);
+    const inner=i%9===0?R-10:i%3===0?R-7:R-4;
+    hx.beginPath();
+    hx.moveTo(Math.sin(a)*(R-1),Math.cos(a)*-(R-1));
+    hx.lineTo(Math.sin(a)*inner,Math.cos(a)*-inner);
+    hx.stroke();
+  }
+  // Cardinal labels
+  hx.font='bold 8px Orbitron,monospace'; hx.textAlign='center'; hx.textBaseline='middle';
+  [['N',0,'#ff6060'],['E',90,'#a0c8ff'],['S',180,'#a0c8ff'],['W',270,'#a0c8ff']].forEach(([l,deg,col])=>{
+    const a=deg*Math.PI/180;
+    hx.fillStyle=col;
+    hx.fillText(l,Math.sin(a)*(R-14),-Math.cos(a)*(R-14));
+  });
+  // 30-degree numeric labels
+  hx.font='6px Share Tech Mono,monospace'; hx.fillStyle='rgba(150,200,255,0.7)';
+  [30,60,120,150,210,240,300,330].forEach(deg=>{
+    const a=deg*Math.PI/180;
+    hx.fillText(deg/10,Math.sin(a)*(R-14),-Math.cos(a)*(R-14));
+  });
+  hx.restore();
+  // Fixed heading bug (top triangle)
+  hx.fillStyle='#ffd700';
+  hx.beginPath(); hx.moveTo(C,C-R+1); hx.lineTo(C-4,C-R+8); hx.lineTo(C+4,C-R+8); hx.closePath(); hx.fill();
+  // Fixed aircraft symbol
+  hx.strokeStyle='#ffd700'; hx.lineWidth=1.5;
+  hx.beginPath();
+  hx.moveTo(C,C-9); hx.lineTo(C,C+6);
+  hx.moveTo(C-10,C+1); hx.lineTo(C+10,C+1);
+  hx.moveTo(C-5,C+5); hx.lineTo(C+5,C+5);
+  hx.stroke();
+  // Destination bearing line
+  if(G.destAP){
+    const dx=G.destAP.x-plane.position.x, dz=G.destAP.z-plane.position.z;
+    const bearing=Math.atan2(dx,dz);
+    const bScreen=bearing+hdgRad;
+    hx.strokeStyle='rgba(0,255,157,0.7)'; hx.lineWidth=1.5; hx.setLineDash([3,4]);
+    hx.beginPath(); hx.moveTo(C,C); hx.lineTo(C+Math.sin(bScreen)*(R-4),C-Math.cos(bScreen)*(R-4)); hx.stroke();
+    hx.setLineDash([]);
+  }
+  hx.restore();
+  hx.strokeStyle='rgba(0,180,255,0.5)'; hx.lineWidth=2;
+  hx.beginPath(); hx.arc(C,C,R,0,Math.PI*2); hx.stroke();
+
+  // ── VSI: Vertical Speed Indicator ─────────────────────────────
+  const vx=_ic.vsi;
+  vx.clearRect(0,0,S2,S2);
+  vx.save();
+  vx.beginPath(); vx.arc(C,C,R,0,Math.PI*2); vx.clip();
+  vx.fillStyle='#080e1a'; vx.fillRect(0,0,S2,S2);
+  // Scale markings — +2000 at top, -2000 at bottom
+  vx.font='6px Share Tech Mono,monospace'; vx.textAlign='center'; vx.fillStyle='rgba(150,200,255,0.6)';
+  vx.strokeStyle='rgba(0,180,255,0.45)'; vx.lineWidth=0.8;
+  const vsiMarks=[[-2000,-140],[-1000,-90],[0,0],[500,45],[1000,90],[2000,140]];
+  vsiMarks.forEach(([fpm,deg])=>{
+    const a=(deg-90)*Math.PI/180;
+    const x=C+Math.cos(a)*(R-3), y=C+Math.sin(a)*(R-3);
+    const x2=C+Math.cos(a)*(R-8), y2=C+Math.sin(a)*(R-8);
+    vx.beginPath(); vx.moveTo(x,y); vx.lineTo(x2,y2); vx.stroke();
+    const tx=C+Math.cos(a)*(R-14), ty=C+Math.sin(a)*(R-14);
+    if(fpm!==0) vx.fillText(Math.abs(fpm/100),tx,ty);
+    else{ vx.fillStyle='rgba(255,255,255,0.7)'; vx.fillText('0',tx,ty); vx.fillStyle='rgba(150,200,255,0.6)'; }
+  });
+  // Needle
+  const vsFpm=G.velY*200;
+  const vsClamp=Math.max(-2000,Math.min(2000,vsFpm));
+  const needleDeg=(vsClamp/2000)*140;
+  const needleA=(needleDeg-90)*Math.PI/180;
+  const col=vsClamp>100?'#00ff9d':vsClamp<-100?'#ff4060':'#a0c8e0';
+  vx.strokeStyle=col; vx.lineWidth=2;
+  vx.beginPath(); vx.moveTo(C,C); vx.lineTo(C+Math.cos(needleA)*(R-10),C+Math.sin(needleA)*(R-10)); vx.stroke();
+  // Label
+  vx.font='bold 7px Orbitron,monospace'; vx.textAlign='center'; vx.fillStyle='rgba(150,200,255,0.5)';
+  vx.fillText('FPM',C,C+16);
+  vx.fillStyle=col; vx.font='bold 8px Orbitron,monospace';
+  vx.fillText((vsFpm>0?'+':'')+Math.round(vsFpm),C,C+26);
+  vx.restore();
+  vx.strokeStyle='rgba(0,180,255,0.5)'; vx.lineWidth=2;
+  vx.beginPath(); vx.arc(C,C,R,0,Math.PI*2); vx.stroke();
+
+  // ── G-Meter ────────────────────────────────────────────────────
+  const gx=_ic.gm;
+  gx.clearRect(0,0,S2,S2);
+  gx.save();
+  gx.beginPath(); gx.arc(C,C,R,0,Math.PI*2); gx.clip();
+  gx.fillStyle='#080e1a'; gx.fillRect(0,0,S2,S2);
+  // Calculate G (1G + vertical accel + pitch effect + turbulence)
+  const targetG = G.onGround ? 1 : 1 + (G.velY-_prevAlt)*0.08 + Math.abs(G.roll)*0.5 + (G.turbulence||0)*2;
+  _gForce += (targetG - _gForce) * 0.12;
+  _prevAlt = G.velY;
+  const gClamped=Math.max(-2,Math.min(5,_gForce));
+  // Scale: -2G at 210°, 0G at 270°, 5G at 30° (all from top)
+  // Map gClamped from [-2..5] to [-120..90] degrees from down (270°)
+  const gRange=7, gMin=-2;
+  const gDeg=((gClamped-gMin)/gRange)*210-120; // -120° to +90° from bottom
+  const gMarkDeg=(g)=>((g-gMin)/gRange)*210-120;
+  // Draw arc background
+  gx.strokeStyle='rgba(0,180,255,0.15)'; gx.lineWidth=6;
+  gx.beginPath(); gx.arc(C,C,R-5,(90+gMarkDeg(-2))*Math.PI/180,(90+gMarkDeg(5))*Math.PI/180); gx.stroke();
+  // Green zone 0-3G
+  gx.strokeStyle='rgba(0,220,100,0.35)'; gx.lineWidth=6;
+  gx.beginPath(); gx.arc(C,C,R-5,(90+gMarkDeg(0))*Math.PI/180,(90+gMarkDeg(3))*Math.PI/180); gx.stroke();
+  // Red zone >3.5G
+  gx.strokeStyle='rgba(255,60,60,0.45)'; gx.lineWidth=6;
+  gx.beginPath(); gx.arc(C,C,R-5,(90+gMarkDeg(3.5))*Math.PI/180,(90+gMarkDeg(5))*Math.PI/180); gx.stroke();
+  // Tick marks
+  gx.strokeStyle='rgba(150,200,255,0.5)'; gx.lineWidth=1; gx.font='6px Share Tech Mono,monospace';
+  gx.textAlign='center'; gx.fillStyle='rgba(150,200,255,0.7)';
+  [-2,-1,0,1,2,3,4,5].forEach(g=>{
+    const a=(90+gMarkDeg(g))*Math.PI/180;
+    gx.beginPath();
+    gx.moveTo(C+Math.cos(a)*(R-2),C+Math.sin(a)*(R-2));
+    gx.lineTo(C+Math.cos(a)*(R-9),C+Math.sin(a)*(R-9)); gx.stroke();
+    gx.fillText(g,C+Math.cos(a)*(R-16),C+Math.sin(a)*(R-16)+2);
+  });
+  // Needle
+  const gA=(90+gMarkDeg(gClamped))*Math.PI/180;
+  const gCol=gClamped>3.5?'#ff4060':gClamped<0?'#ffd700':'#00d4ff';
+  gx.strokeStyle=gCol; gx.lineWidth=2;
+  gx.beginPath(); gx.moveTo(C,C); gx.lineTo(C+Math.cos(gA)*(R-10),C+Math.sin(gA)*(R-10)); gx.stroke();
+  gx.fillStyle=gCol; gx.beginPath(); gx.arc(C,C,3,0,Math.PI*2); gx.fill();
+  // Digital readout
+  gx.font='bold 9px Orbitron,monospace'; gx.textAlign='center';
+  gx.fillStyle=gCol; gx.fillText(gClamped.toFixed(1)+'G',C,C+18);
+  gx.restore();
+  gx.strokeStyle='rgba(0,180,255,0.5)'; gx.lineWidth=2;
+  gx.beginPath(); gx.arc(C,C,R,0,Math.PI*2); gx.stroke();
+}
+
+
 const isMobile=()=>window.innerWidth<=700||('ontouchstart' in window && window.innerWidth<=900);
 
 // Touch state
