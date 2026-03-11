@@ -266,7 +266,7 @@ body{background:#000;color:#e0f0ff;font-family:'Share Tech Mono',monospace;overf
   <div class="hp"><div class="hl">Airspeed</div><div class="hv" id="hSpd">0 kts</div><div class="sbar"><div class="sf" id="sBar" style="width:0"></div></div><div class="hl" style="margin-top:6px">Altitude</div><div class="hv y" id="hAlt">0 ft</div></div>
   <div class="hp"><div class="hl">Vert Speed</div><div class="hv" id="hVS" style="font-size:12px">0 fpm</div><div class="hl" style="margin-top:6px">Heading</div><div class="hv" id="hHdg" style="font-size:12px">000°</div></div>
   <div class="hp"><div class="hl">Status</div><div class="hv" id="hStat" style="font-size:11px;color:#a0c8e0">On Ground</div><div class="hl" style="margin-top:6px">Destination</div><div class="hv" id="hDest" style="font-size:10px;color:#607a90">—</div></div>
-  <div class="hp"><div class="hl">Flaps</div><div class="hv" id="hFlaps" style="font-size:11px;color:#607a90">UP</div><div class="hl" style="margin-top:6px">Spoilers</div><div class="hv" id="hSpoil" style="font-size:11px;color:#607a90">OFF</div></div>
+  <div class="hp"><div class="hl">Flaps</div><div class="hv" id="hFlaps" style="font-size:11px;color:#607a90">UP</div><div class="hl" style="margin-top:6px">Gear</div><div class="hv" id="hGear" style="font-size:11px;color:#00ff9d">DOWN</div></div>
   <div class="hp"><div class="hl">Dist/Brg</div><div class="hv" id="hDistBrg" style="font-size:10px;color:#607a90">— km</div><div class="hl" style="margin-top:6px">Autopilot</div><div class="hv" id="hAP" style="font-size:10px;color:#607a90">OFF</div></div>
 </div>
 
@@ -295,7 +295,7 @@ body{background:#000;color:#e0f0ff;font-family:'Share Tech Mono',monospace;overf
   <div class="wbox">TIME<b id="wTime">Day</b></div>
 </div>
 
-<div id="hint">W/S Throttle · A/D Turn · ↑↓ Pitch · ←→ Roll · F Flaps · B Spoilers · P Autopilot · R Refuel · C Cam · E Menu · X World Portal</div>
+<div id="hint">W/S Throttle · A/D Turn · ↑↓ Pitch · ←→ Roll · F Flaps · G Gear · B Spoilers · P Autopilot · R Refuel · C Cam · E Menu · X Portal</div>
 <div id="notif"></div>
 <div id="ach"></div>
 <div id="mm"><canvas id="mmc" width="175" height="175"></canvas></div>
@@ -326,7 +326,7 @@ body{background:#000;color:#e0f0ff;font-family:'Share Tech Mono',monospace;overf
 //  rotation.z = -roll          → right wing down when rolling right ✓
 // ═══════════════════════════════════════════════════════════════════
 
-const GY=3, AP_R=2800, SAVE_KEY='skyhaul_v5';
+const GY=3, AP_R=2800, ARRIVE_R=9000, SAVE_KEY='skyhaul_v5';
 const W2Z=2000000, W3Z=4000000; // world Z offsets
 
 // 8 planes — piston → turboprop → biz jet → airliner
@@ -382,6 +382,24 @@ let AIRPORTS=ALL_AIRPORTS.filter(a=>a.world===1);
 const JOB_TYPES=['Cargo Haul','Passenger Run','Mail Delivery','Medical Supplies','Express Freight',
   'VIP Charter','Cold Chain','Tech Equipment','Film Crew','Relief Aid','Livestock Run','Secret Package'];
 
+const AIRLINES=[
+  {id:0,  name:"SkyHaul Air",        price:0,       body:0xddeeff, acc:0xdd2222, desc:"Default — classic blue & red"},
+  {id:1,  name:"Emirates",           price:12000,   body:0xffffff, acc:0xcc2233, desc:"White & beige with UAE red — iconic widebody carrier"},
+  {id:2,  name:"Qatar Airways",      price:15000,   body:0xf0eeff, acc:0x5c0632, desc:"Pearl white & deep maroon — 5-star Middle East flag carrier"},
+  {id:3,  name:"Singapore Airlines", price:18000,   body:0xffffff, acc:0x003da5, desc:"Tropical blue & gold — world-renowned airline"},
+  {id:4,  name:"ANA",                price:14000,   body:0xeeeeff, acc:0x003087, desc:"Crisp white & navy — All Nippon Airways, Japan"},
+  {id:5,  name:"EVA Air",            price:13000,   body:0xffffff, acc:0x007b5e, desc:"White & forest green — Taiwan premium carrier"},
+  {id:6,  name:"Cathay Pacific",     price:16000,   body:0xeef6ff, acc:0x005f6b, desc:"White & teal — Hong Kong flagship airline"},
+  {id:7,  name:"Korean Air",         price:13500,   body:0xeeeeff, acc:0x003087, desc:"Blue & white with taeguk — South Korea flag carrier"},
+  {id:8,  name:"Lufthansa",          price:11000,   body:0xffffff, acc:0x05164d, desc:"White & midnight blue — Germany national airline"},
+  {id:9,  name:"Air France",         price:12500,   body:0xf0f4ff, acc:0x002395, desc:"Navy & silver — elegance from Paris"},
+  {id:10, name:"British Airways",    price:11500,   body:0xffffff, acc:0x075aaa, desc:"White & speedmarque blue — UK flag carrier"},
+  {id:11, name:"Japan Airlines",     price:14500,   body:0xffffff, acc:0xcc0000, desc:"All-white with red crane — JAL Japan"},
+  {id:12, name:"Turkish Airlines",   price:10000,   body:0xffffff, acc:0xc8102e, desc:"White & red — most international destinations"},
+  {id:13, name:"Delta Air Lines",    price:9000,    body:0xeeeeff, acc:0x003087, desc:"Navy blue & red widget — major US carrier"},
+  {id:14, name:"United Airlines",    price:9500,    body:0xeef0ff, acc:0x002244, desc:"Globe blue — major US hub carrier"},
+  {id:15, name:"Qantas",             price:10500,   body:0xffffff, acc:0xee0000, desc:"White with flying kangaroo red — Australia flag carrier"},
+];
 const ACHIEVEMENTS=[
   {id:'first_flight',  name:'First Flight',     desc:'Take off for the first time',  req:g=>g.totalFlights>=1},
   {id:'first_job',     name:'Delivery Done',    desc:'Complete your first job',       req:g=>g.jobsDone>=1},
@@ -400,7 +418,7 @@ const ACHIEVEMENTS=[
 // ═══ GAME STATE ═══════════════════════════════════════════════════
 const G={
   money:2500, planeId:0, owned:[0],
-  spd:0, alt:0, thr:0, flaps:false, spoilers:false, autopilot:false,
+  spd:0, alt:0, thr:0, flaps:false, spoilers:false, autopilot:false, gearDown:true, _gearT:1.0,
   onGround:true, velY:0,
   nearAP:null, curAP:null,
   job:null, jobActive:false, destAP:null,
@@ -412,6 +430,7 @@ const G={
   turbulence:0,
   windX:0, windZ:0,
   achievements:new Set(),
+  airlineId:0, ownedAirlines:[0],
   timeOfDay:0.4,   // 0=midnight,0.5=noon
   crashed:false,
   currentWorld:1,
@@ -421,12 +440,12 @@ const G={
 
 // ═══ THREE.JS SETUP ═════════════════════════════════════════════
 const R=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true});
-R.setPixelRatio(Math.min(devicePixelRatio,1.5));
+R.setPixelRatio(Math.min(devicePixelRatio,2));
 R.setSize(innerWidth,innerHeight);
 R.shadowMap.enabled=false;
 
 const S=new THREE.Scene();
-S.fog=new THREE.FogExp2(0x87b8e0,0.000012);
+S.fog=new THREE.FogExp2(0x87b8e0,0.0000065); // less thick fog = more visible terrain
 S.background=new THREE.Color(0x4a90cc);
 
 const CAM=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,10,300000);
@@ -442,6 +461,10 @@ sun.shadow.camera.far=100000;
 sun.shadow.camera.left=sun.shadow.camera.bottom=-50000;
 sun.shadow.camera.right=sun.shadow.camera.top=50000;
 S.add(sun);
+// Moon — cool blue-white light at night
+const moonLight=new THREE.DirectionalLight(0x8899cc,0);
+moonLight.position.set(-60000,80000,-40000);
+S.add(moonLight);
 
 // ═══ WORLD ══════════════════════════════════════════════════════
 function bm(c){return new THREE.MeshLambertMaterial({color:c});}
@@ -618,21 +641,53 @@ function buildCity(def){
         else { ac.position.set(bx+acPos.x,acPos.y,bz+acPos.z); S.add(ac); }
       }
 
-      // Window strips on tall buildings — glow at night
-      if(bh>2000){
-        const floors=Math.floor(bh/300);
-        for(let f=1;f<Math.min(floors,25);f++){
-          const lit=Math.random()>.3;
-          const wmat=lit?nightMat(0x334455,0xffe880):bm(0x1a2233);
-          const ws=new THREE.Mesh(new THREE.BoxGeometry(bw+2,22,4),wmat);
-          const ws2=new THREE.Mesh(new THREE.BoxGeometry(bw+2,22,4),wmat.clone?wmat.clone():wmat);
-          ws2.rotation.y=Math.PI;
+      // Window lights on ALL buildings — small buildings get dot windows, tall get strips
+      const floorH = bh>2000 ? 280 : bh>600 ? 180 : 120;
+      const maxFloors = Math.min(Math.floor(bh/floorH), bh>2000?30:bh>600?12:5);
+      if(maxFloors>=1){
+        const stripH = bh>2000 ? 22 : 14;
+        // Alternate floors lit/dark with some randomness
+        for(let f=1;f<=maxFloors;f++){
+          const lit = Math.random()>0.25;
+          if(!lit) continue;
+          const nightCol = bh>2000 ? (Math.random()>0.15?0xffe880:0x88ccff)  // offices: warm/cool
+                                   : (Math.random()>0.3 ?0xffdd88:0xffeebb); // homes: warm yellow
+          const dayCol = 0x1a2233;
+          const wmat = nightMat(dayCol, nightCol);
+          // Front + back strips
+          const ws  = new THREE.Mesh(new THREE.BoxGeometry(bw*0.88,stripH,4), wmat);
+          const ws2 = new THREE.Mesh(new THREE.BoxGeometry(bw*0.88,stripH,4), wmat);
+          ws2.rotation.y = Math.PI;
+          // Side strips (shorter)
+          const wsSide  = new THREE.Mesh(new THREE.BoxGeometry(bd*0.88,stripH,4), wmat);
+          const wsSide2 = new THREE.Mesh(new THREE.BoxGeometry(bd*0.88,stripH,4), wmat);
+          wsSide.rotation.y = Math.PI/2; wsSide2.rotation.y = -Math.PI/2;
+          const fy = f*floorH + stripH/2;
           if(bldGrp){
-            ws.position.set(0,f*180+50,bd/2+2); bldGrp.add(ws);
-            ws2.position.set(0,f*180+50,-bd/2-2); bldGrp.add(ws2);
+            ws.position.set(0,fy,bd/2+2);     bldGrp.add(ws);
+            ws2.position.set(0,fy,-bd/2-2);   bldGrp.add(ws2);
+            wsSide.position.set(bw/2+2,fy,0); bldGrp.add(wsSide);
+            wsSide2.position.set(-bw/2-2,fy,0); bldGrp.add(wsSide2);
           } else {
-            ws.position.set(bx,f*180+50,bz+bd/2+2); S.add(ws);
-            ws2.position.set(bx,f*180+50,bz-bd/2-2); S.add(ws2);
+            ws.position.set(bx,fy,bz+bd/2+2);    S.add(ws);
+            ws2.position.set(bx,fy,bz-bd/2-2);   S.add(ws2);
+            wsSide.position.set(bx+bw/2+2,fy,bz); S.add(wsSide);
+            wsSide2.position.set(bx-bw/2-2,fy,bz); S.add(wsSide2);
+          }
+        }
+        // Rooftop edge light strip (all buildings >300h)
+        if(bh>300){
+          const roofCol = isSky ? 0xff4400 : 0xffffff; // red beacon tint for skyscrapers
+          const rmat = nightMat(0x111111, roofCol);
+          const rl  = new THREE.Mesh(new THREE.BoxGeometry(bw+8, 12, 8), rmat);
+          const rl2 = new THREE.Mesh(new THREE.BoxGeometry(bw+8, 12, 8), rmat);
+          rl2.rotation.y = Math.PI;
+          if(bldGrp){
+            rl.position.set(0, bh+6, bd/2+4);  bldGrp.add(rl);
+            rl2.position.set(0, bh+6, -bd/2-4); bldGrp.add(rl2);
+          } else {
+            rl.position.set(bx, bh+6, bz+bd/2+4);  S.add(rl);
+            rl2.position.set(bx, bh+6, bz-bd/2-4); S.add(rl2);
           }
         }
       }
@@ -802,11 +857,22 @@ CITY_DEFS.forEach(buildCity);
       const rb=new THREE.Mesh(new THREE.SphereGeometry(28,6,6),beaconMat());
       rb.position.set(x+(a-1)*1300,2710,z+oz);S.add(rb);
     }
-    // Glowing windows at night
+    // Glowing windows at night — all 4 sides + rooftop strip
     for(let w=0;w<5;w++){
       const win=new THREE.Mesh(new THREE.BoxGeometry(280,260,10),nightMat(0x445566,0xffee99));
-      win.position.set(x-1000+w*500,260,z+oz+1610);S.add(win);
+      win.position.set(x-1000+w*500,260,z+oz+1610); S.add(win);
+      // Back wall
+      const winB=win.clone(); winB.position.set(x-1000+w*500,260,z+oz-1610); S.add(winB);
     }
+    // Side windows
+    for(let h=0;h<3;h++){
+      const wl=new THREE.Mesh(new THREE.BoxGeometry(10,240,900),nightMat(0x445566,0xaaccff));
+      wl.position.set(x+2100,200+h*280,z+oz); S.add(wl);
+      const wr=wl.clone(); wr.position.set(x-2100,200+h*280,z+oz); S.add(wr);
+    }
+    // Rooftop edge
+    const rof=new THREE.Mesh(new THREE.BoxGeometry(4300,10,6),nightMat(0x113355,0x88ddff));
+    rof.position.set(x,1600,z+oz+1611); S.add(rof);
   }
   iceBase(30000,-60000); iceBase(-80000,120000); iceBase(170000,-20000);
   iceBase(-150000,-100000); iceBase(0,200000); iceBase(250000,60000);
@@ -854,14 +920,23 @@ function buildDesertCity(cx,cz){
       // Flat-top parapet
       const par=new THREE.Mesh(new THREE.BoxGeometry(bw+90,bh*.04+90,bd+90),bm(0xddbb99));
       par.position.set(bx,bh+20,bz+oz); S.add(par);
-      if(bh>1500){
-        const floors=Math.floor(bh/240);
-        for(let f=1;f<Math.min(floors,16);f++){
-          if(Math.random()>.5){
-            const wm=nightMat(0x553322,0xffcc66);
-            const ws=new THREE.Mesh(new THREE.BoxGeometry(bw+2,18,4),wm);
-            ws.position.set(bx,f*220+50,bz+oz+bd/2+2); S.add(ws);
-          }
+      // Window lights on all desert buildings
+      {
+        const fH=bh>1500?220:bh>500?150:100;
+        const maxF=Math.min(Math.floor(bh/fH),20);
+        for(let f=1;f<=maxF;f++){
+          if(Math.random()>0.35) continue;
+          const wm=nightMat(0x553322,0xffcc66);
+          const ws=new THREE.Mesh(new THREE.BoxGeometry(bw*0.85,14,4),wm);
+          ws.position.set(bx,f*fH+50,bz+oz+bd/2+2); S.add(ws);
+          const ws2=new THREE.Mesh(new THREE.BoxGeometry(bw*0.85,14,4),wm);
+          ws2.position.set(bx,f*fH+50,bz+oz-bd/2-2); S.add(ws2);
+        }
+        // Rooftop edge
+        if(bh>300){
+          const rm=nightMat(0x221100,0xffaa44);
+          const rl=new THREE.Mesh(new THREE.BoxGeometry(bw+6,10,6),rm);
+          rl.position.set(bx,bh+5,bz+oz+bd/2+3); S.add(rl);
         }
       }
     }
@@ -1321,8 +1396,26 @@ function buildAirport(ap){
 
   g.position.set(ap.x,0,ap.z);
   S.add(g);
+  return g;
 }
-ALL_AIRPORTS.forEach(buildAirport);
+const AIRPORT_GROUPS={}; // world→{apId→group}
+function buildWorldAirports(world){
+  if(AIRPORT_GROUPS[world]) return; // already built
+  AIRPORT_GROUPS[world]={};
+  ALL_AIRPORTS.filter(a=>a.world===world).forEach(ap=>{
+    const g=buildAirport(ap); // buildAirport now returns the group
+    AIRPORT_GROUPS[world][ap.id]=g;
+    g.visible=true;
+  });
+}
+function showWorldAirports(world){
+  // Hide all, show only current world
+  for(const w in AIRPORT_GROUPS){
+    const vis=(parseInt(w)===world);
+    for(const id in AIRPORT_GROUPS[w]) AIRPORT_GROUPS[w][id].visible=vis;
+  }
+}
+buildWorldAirports(1); // only build world 1 at start
 
 // ═══════════════════════════════════════════════════════════════
 //  PLANE MODELS
@@ -1334,13 +1427,12 @@ ALL_AIRPORTS.forEach(buildAirport);
 // ═══════════════════════════════════════════════════════════════
 function buildPlane(id){
   const g=new THREE.Group();
-  // CRITICAL: set rotation order BEFORE any rotations
   g.rotation.order='YXZ';
 
-  const type=PLANES[id].type;
+  const type=PLANES[id]?PLANES[id].type:'cessna';
   const SC=[1,1.1,1.35,1.55,1.85,2.1,3.6,5.2][id]||1;
-  const BODY=[0xddeeff,0xeef5ff,0xccddee,0xeeeedd,0x0d1520,0xfaf0e0,0xffffff,0xffffff][id];
-  const ACC =[0xdd2222,0x2244dd,0x228844,0xcc8800,0x5599dd,0xdd5500,0x1144aa,0xff6600][id];
+  const BODY=[0xddeeff,0xeef5ff,0xccddee,0xeeeedd,0x0d1520,0xfaf0e0,0xffffff,0xffffff][id]||0xddeeff;
+  const ACC =[0xdd2222,0x2244dd,0x228844,0xcc8800,0x5599dd,0xdd5500,0x1144aa,0xff6600][id]||0xdd2222;
   const M=c=>new THREE.MeshLambertMaterial({color:c});
   const BM=M(BODY), AM=M(ACC), EM=M(0x333333), WM=M(0x99ccee), DM=M(0x111111);
   const s=SC;
@@ -1365,8 +1457,43 @@ function buildPlane(id){
     m.position.set(x,y,z); g.add(m);
   };
   const navL=(x,y,z,side)=>{
-    const m=new THREE.Mesh(new THREE.SphereGeometry(s*1.6,6,6),M(side>0?0xff0000:0x00ff00));
+    // Emissive nav light — glows visibly day & night
+    const col=side>0?0xff0000:0x00ff00;
+    const mat=new THREE.MeshBasicMaterial({color:col});
+    const m=new THREE.Mesh(new THREE.SphereGeometry(s*2.8,7,6),mat);
     m.position.set(x,y,z); g.add(m);
+    // Soft glow halo
+    const halo=new THREE.Mesh(new THREE.SphereGeometry(s*5.5,6,5),
+      new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.18,depthWrite:false}));
+    halo.position.set(x,y,z); g.add(halo);
+  };
+  // Strobe mesh helper — white blinking light on tail
+  const addStrobe=(x,y,z)=>{
+    const sm=new THREE.Mesh(new THREE.SphereGeometry(s*2.4,6,5),
+      new THREE.MeshBasicMaterial({color:0xffffff}));
+    sm.position.set(x,y,z); g.add(sm);
+    g.userData.strobeMeshes=g.userData.strobeMeshes||[];
+    g.userData.strobeMeshes.push(sm);
+  };
+
+  // ── GEAR GROUPS ─────────────────────────────────────────────────
+  // gearL / gearR: main gear, pivot at fuselage attach point
+  // gearN: nose gear, pivot at nose attach
+  // Gear down = rotation 0; Gear up = rotation PI/2 (fold outward / forward)
+  const mkGearGrp=(px,py,pz)=>{const gg=new THREE.Group();gg.position.set(px,py,pz);g.add(gg);return gg;};
+  const isFixed=(type==='cessna'||type==='cherokee'||type==='twinotter');
+  g.userData.gearFixed=isFixed;
+  g.userData.scale=s;
+
+  // Helper: add to gear group (position relative to group origin)
+  const gcyl=(grp,rt,rb,h,seg,mat,x,y,z,rx)=>{
+    rx=rx||0;
+    const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),mat);
+    m.rotation.x=rx; m.position.set(x,y,z); grp.add(m); return m;
+  };
+  const gbox=(grp,w,h,d,mat,x,y,z)=>{
+    const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+    m.position.set(x,y,z); m.castShadow=true; grp.add(m); return m;
   };
 
   if(type==='cessna'){
@@ -1374,11 +1501,10 @@ function buildPlane(id){
     cone(s*3,s*14,8,BM,0,0,s*25,-Math.PI/2);
     box(s*4,s*4,s*10,BM,0,s*1,-s*23);
     box(s*4.5,s*3.5,s*10,WM,0,s*4.5,s*8);
-    // High wings (above fuselage)
     [-1,1].forEach(side=>{
       box(s*16,s*1.2,s*8,BM,side*s*14,s*3.2,s*2);
       box(s*8,s*0.8,s*5,BM,side*s*26,s*3.1,s*1);
-      box(s*0.7,s*3,s*0.7,EM,side*s*12,s*.8,s*2); // strut
+      box(s*0.7,s*3,s*0.7,EM,side*s*12,s*.8,s*2);
       box(s*0.6,s*3.2,s*2.5,AM,side*s*32,s*4.7,s*.5);
       navL(side*s*33,s*3.1,s*1,side);
       box(s*24,s*1.5,s*1,AM,side*s*18,s*3.3,s*2);
@@ -1389,17 +1515,21 @@ function buildPlane(id){
     cyl(s*3,s*3.5,s*5,10,EM,0,0,s*30,Math.PI/2);
     cone(s*1.8,s*4,8,M(0x888888),0,0,s*34,-Math.PI/2);
     propDisc(s*7,0,0,s*35);
-    [[s*3.5,-s*3,s*8],[-s*3.5,-s*3,s*8],[0,-s*3,-s*10]].forEach(([gx,gy,gz])=>{
-      cyl(s*.6,s*.6,s*4.5,6,EM,gx,gy+s*2,gz);
-      cyl(s*1.8,s*1.8,s*1.2,10,DM,gx,gy,gz,Math.PI/2);
-    });
+    // Fixed gear (cessna)
+    addStrobe(0,s*8,-s*22); // tail top strobe
+    addStrobe(0,0,s*36); // nose strobe
+    const gL=mkGearGrp(s*3.5,-s*1.5,s*8);
+    const gR=mkGearGrp(-s*3.5,-s*1.5,s*8);
+    const gN=mkGearGrp(0,-s*1.5,-s*10);
+    [gL,gR].forEach(gg=>{ gcyl(gg,s*.6,s*.6,s*4.5,6,EM,0,-s*2,0); gcyl(gg,s*1.8,s*1.8,s*1.2,10,DM,0,-s*3.5,0,Math.PI/2); });
+    gcyl(gN,s*.6,s*.6,s*4.5,6,EM,0,-s*2,0); gcyl(gN,s*1.8,s*1.8,s*1.2,10,DM,0,-s*3.5,0,Math.PI/2);
+    g.userData.gearL=gL; g.userData.gearR=gR; g.userData.gearN=gN;
   }
   else if(type==='cherokee'){
     box(s*6,s*6,s*36,BM,0,0,0);
     cone(s*3,s*14,8,BM,0,0,s*25,-Math.PI/2);
     box(s*4,s*4,s*10,BM,0,s*1,-s*23);
     box(s*4.5,s*3.5,s*10,WM,0,s*4.5,s*8);
-    // Low wings (below fuselage)
     [-1,1].forEach(side=>{
       box(s*16,s*1.2,s*8,BM,side*s*14,-s*2.5,s*2);
       box(s*8,s*0.8,s*5,BM,side*s*26,-s*2.7,s*1);
@@ -1413,13 +1543,15 @@ function buildPlane(id){
     cyl(s*3,s*3.5,s*5,10,EM,0,0,s*30,Math.PI/2);
     cone(s*1.8,s*4,8,M(0x888888),0,0,s*34,-Math.PI/2);
     propDisc(s*7,0,0,s*35);
-    [[s*3.5,-s*5,s*8],[-s*3.5,-s*5,s*8],[0,-s*4,-s*10]].forEach(([gx,gy,gz])=>{
-      cyl(s*.6,s*.6,s*4.5,6,EM,gx,gy+s*2,gz);
-      cyl(s*1.8,s*1.8,s*1.2,10,DM,gx,gy,gz,Math.PI/2);
-    });
+    addStrobe(0,s*8,-s*22); addStrobe(0,0,s*36);
+    const gL=mkGearGrp(s*3.5,-s*3,s*8);
+    const gR=mkGearGrp(-s*3.5,-s*3,s*8);
+    const gN=mkGearGrp(0,-s*2.5,-s*10);
+    [gL,gR].forEach(gg=>{ gcyl(gg,s*.6,s*.6,s*4.5,6,EM,0,-s*2,0); gcyl(gg,s*1.8,s*1.8,s*1.2,10,DM,0,-s*3.5,0,Math.PI/2); });
+    gcyl(gN,s*.6,s*.6,s*4.5,6,EM,0,-s*2,0); gcyl(gN,s*1.8,s*1.8,s*1.2,10,DM,0,-s*3.5,0,Math.PI/2);
+    g.userData.gearL=gL; g.userData.gearR=gR; g.userData.gearN=gN;
   }
   else if(type==='twinotter'){
-    // Boxy STOL fuselage, high wing, fixed gear
     box(s*7,s*7,s*38,BM,0,0,0);
     cone(s*3.5,s*10,8,BM,0,0,s*24,-Math.PI/2);
     box(s*5,s*5,s*10,BM,0,s*1,-s*24);
@@ -1437,15 +1569,15 @@ function buildPlane(id){
     box(s*1,s*7,s*3.5,AM,0,s*6.5,-s*26);
     [-1,1].forEach(side=>{box(s*8,s*0.8,s*5,BM,side*s*6,s*2.5,-s*21);});
     // Fixed tundra gear
-    [-1,1].forEach(side=>{
-      cyl(s*1,s*1,s*5.5,8,EM,side*s*4,-s*4.5,s*8);
-      cyl(s*2.5,s*2.5,s*1.5,10,DM,side*s*4,-s*7,s*8,Math.PI/2);
-    });
-    cyl(s*.8,s*.8,s*4,6,EM,0,-s*4.5,-s*10);
-    cyl(s*1.8,s*1.8,s*1.2,10,DM,0,-s*6.5,-s*10,Math.PI/2);
+    addStrobe(0,s*8,-s*22); addStrobe(0,0,s*25);
+    const gL=mkGearGrp(s*4,-s*2,s*8);
+    const gR=mkGearGrp(-s*4,-s*2,s*8);
+    const gN=mkGearGrp(0,-s*2,-s*10);
+    [gL,gR].forEach(gg=>{ gcyl(gg,s*1,s*1,s*5.5,8,EM,0,-s*2.5,0); gcyl(gg,s*2.5,s*2.5,s*1.5,10,DM,0,-s*5,0,Math.PI/2); });
+    gcyl(gN,s*.8,s*.8,s*4,6,EM,0,-s*2,0); gcyl(gN,s*1.8,s*1.8,s*1.2,10,DM,0,-s*4,0,Math.PI/2);
+    g.userData.gearL=gL; g.userData.gearR=gR; g.userData.gearN=gN;
   }
   else if(type==='kingair'){
-    // Oval pressurised fuselage
     box(s*6,s*7.5,s*42,BM,0,0,0);
     cone(s*3.5,s*12,10,BM,0,0,s*27,-Math.PI/2);
     box(s*4.5,s*4.5,s*10,BM,0,s*0.5,-s*26);
@@ -1462,13 +1594,15 @@ function buildPlane(id){
     box(s*1.2,s*10,s*8,BM,0,s*8,-s*24);
     box(s*1,s*8,s*3.5,AM,0,s*7.5,-s*28.5);
     [-1,1].forEach(side=>{box(s*9,s*0.8,s*5.5,BM,side*s*7,s*3,-s*22);});
-    [[s*3.5,-s*5,s*10],[-s*3.5,-s*5,s*10],[0,-s*5,-s*12]].forEach(([gx,gy,gz])=>{
-      cyl(s*.7,s*.7,s*5,6,EM,gx,gy+s*2.5,gz);
-      cyl(s*2,s*2,s*1.3,10,DM,gx,gy,gz,Math.PI/2);
-    });
+    addStrobe(0,s*10,-s*24); addStrobe(0,-s*1.5,s*30);
+    const gL=mkGearGrp(s*3.5,-s*2,s*10);
+    const gR=mkGearGrp(-s*3.5,-s*2,s*10);
+    const gN=mkGearGrp(0,-s*2,-s*12);
+    [gL,gR].forEach(gg=>{ gcyl(gg,s*.7,s*.7,s*5,6,EM,0,-s*2.5,0); gcyl(gg,s*2,s*2,s*1.3,10,DM,0,-s*5,0,Math.PI/2); });
+    gcyl(gN,s*.7,s*.7,s*5,6,EM,0,-s*2.5,0); gcyl(gN,s*2,s*2,s*1.3,10,DM,0,-s*5,0,Math.PI/2);
+    g.userData.gearL=gL; g.userData.gearR=gR; g.userData.gearN=gN;
   }
   else if(type==='learjet'){
-    // T-tail, tip tanks, rear engines
     box(s*5.5,s*6,s*42,BM,0,0,0);
     cone(s*2.8,s*16,10,BM,0,0,s*29,-Math.PI/2);
     box(s*3.5,s*3.5,s*8,BM,0,s*0.5,-s*26);
@@ -1478,18 +1612,15 @@ function buildPlane(id){
       wi.position.set(side*s*10,0,s*2); wi.rotation.y=side*0.22; wi.castShadow=true; g.add(wi);
       const wo=new THREE.Mesh(new THREE.BoxGeometry(s*10,s*0.7,s*6),BM);
       wo.position.set(side*s*22,0,-s*2); wo.rotation.y=side*0.28; g.add(wo);
-      // Tip tanks (distinctive Learjet feature)
       cyl(s*1.5,s*1.5,s*12,8,EM,side*s*30,-s*0.3,-s*4,Math.PI/2);
       cone(s*1,s*5,8,EM,side*s*30,-s*0.3,s*2,-Math.PI/2);
       const ws=new THREE.Mesh(new THREE.BoxGeometry(s*20,s*1.2,s*1),AM);
       ws.position.set(side*s*16,0,s*1); ws.rotation.y=side*0.25; g.add(ws);
       navL(side*s*31,-s*0.3,-s*4,side);
     });
-    // T-tail: tall fin + horizontal on top
     box(s*1.2,s*12,s*9,BM,0,s*10,-s*24);
     box(s*1,s*10,s*3.5,AM,0,s*9.5,-s*28.5);
     [-1,1].forEach(side=>{box(s*9,s*0.9,s*5,BM,side*s*7,s*15.5,-s*22);});
-    // Rear-mounted engines
     [-1,1].forEach(side=>{
       cyl(s*2.5,s*2,s*16,10,EM,side*s*6,s*1,-s*22,Math.PI/2);
       const inF=new THREE.Mesh(new THREE.CircleGeometry(s*2.5,10),DM);
@@ -1498,13 +1629,15 @@ function buildPlane(id){
       exF.material.transparent=true; exF.material.opacity=.7;
       exF.rotation.x=Math.PI; exF.position.set(side*s*6,s*1,-s*30); g.add(exF);
     });
-    [[s*3,-s*5,s*10],[-s*3,-s*5,s*10],[0,-s*4,-s*14]].forEach(([gx,gy,gz])=>{
-      cyl(s*.6,s*.6,s*5,6,EM,gx,gy+s*2.5,gz);
-      cyl(s*1.8,s*1.8,s*1.2,10,DM,gx,gy,gz,Math.PI/2);
-    });
+    addStrobe(0,s*16,-s*24); addStrobe(0,0,s*32);
+    const gL=mkGearGrp(s*3,-s*2,s*10);
+    const gR=mkGearGrp(-s*3,-s*2,s*10);
+    const gN=mkGearGrp(0,-s*2,-s*14);
+    [gL,gR].forEach(gg=>{ gcyl(gg,s*.6,s*.6,s*5,6,EM,0,-s*2.5,0); gcyl(gg,s*1.8,s*1.8,s*1.2,10,DM,0,-s*5,0,Math.PI/2); });
+    gcyl(gN,s*.6,s*.6,s*5,6,EM,0,-s*2.5,0); gcyl(gN,s*1.8,s*1.8,s*1.2,10,DM,0,-s*5,0,Math.PI/2);
+    g.userData.gearL=gL; g.userData.gearR=gR; g.userData.gearN=gN;
   }
   else if(type==='citation'){
-    // Sleek fuselage, under-wing engines, swept wings
     box(s*5.5,s*6.5,s*46,BM,0,0,0);
     cone(s*2.8,s*18,10,BM,0,0,s*32,-Math.PI/2);
     box(s*3.5,s*3.5,s*9,BM,0,s*0.5,-s*28);
@@ -1529,13 +1662,15 @@ function buildPlane(id){
     box(s*1.2,s*11,s*9,BM,0,s*9,-s*27);
     box(s*1,s*9,s*4,AM,0,s*8.5,-s*31.5);
     [-1,1].forEach(side=>{box(s*10,s*0.9,s*6,BM,side*s*8,s*3.5,-s*25);});
-    [[s*3.5,-s*5,s*11],[-s*3.5,-s*5,s*11],[0,-s*4,-s*14]].forEach(([gx,gy,gz])=>{
-      cyl(s*.65,s*.65,s*5.5,6,EM,gx,gy+s*2.8,gz);
-      cyl(s*1.9,s*1.9,s*1.3,10,DM,gx,gy,gz,Math.PI/2);
-    });
+    addStrobe(0,s*12,-s*27); addStrobe(0,0,s*35);
+    const gL=mkGearGrp(s*3.5,-s*2.5,s*11);
+    const gR=mkGearGrp(-s*3.5,-s*2.5,s*11);
+    const gN=mkGearGrp(0,-s*2.5,-s*14);
+    [gL,gR].forEach(gg=>{ gcyl(gg,s*.65,s*.65,s*5.5,6,EM,0,-s*2.8,0); gcyl(gg,s*1.9,s*1.9,s*1.3,10,DM,0,-s*5.6,0,Math.PI/2); });
+    gcyl(gN,s*.65,s*.65,s*5.5,6,EM,0,-s*2.8,0); gcyl(gN,s*1.9,s*1.9,s*1.3,10,DM,0,-s*5.6,0,Math.PI/2);
+    g.userData.gearL=gL; g.userData.gearR=gR; g.userData.gearN=gN;
   }
   else if(type==='b737'){
-    // Narrow-body airliner with CFM56 engines
     box(s*7,s*8,s*56,BM,0,0,0);
     cone(s*3.5,s*18,10,BM,0,0,s*37,-Math.PI/2);
     box(s*4.5,s*4.5,s*10,BM,0,s*0.5,-s*33);
@@ -1567,17 +1702,18 @@ function buildPlane(id){
     box(s*1.5,s*14,s*12,BM,0,s*11,-s*31);
     box(s*1.3,s*12,s*5,AM,0,s*10.5,-s*37);
     [-1,1].forEach(side=>{box(s*14,s*1,s*8,BM,side*s*11,s*5,-s*29);});
-    [[s*5,-s*6,s*14],[-s*5,-s*6,s*14],[0,-s*5,-s*18]].forEach(([gx,gy,gz])=>{
-      cyl(s*.9,s*.9,s*6.5,6,EM,gx,gy+s*3,gz);
-      cyl(s*2.5,s*2.5,s*1.6,12,DM,gx,gy,gz,Math.PI/2);
-    });
+    addStrobe(0,s*15,-s*31); addStrobe(0,0,s*40);
+    const gL=mkGearGrp(s*5,-s*2.5,s*14);
+    const gR=mkGearGrp(-s*5,-s*2.5,s*14);
+    const gN=mkGearGrp(0,-s*2.5,-s*18);
+    [gL,gR].forEach(gg=>{ gcyl(gg,s*.9,s*.9,s*6.5,6,EM,0,-s*3.3,0); gcyl(gg,s*2.5,s*2.5,s*1.6,12,DM,0,-s*6.6,0,Math.PI/2); });
+    gcyl(gN,s*.9,s*.9,s*6.5,6,EM,0,-s*3.3,0); gcyl(gN,s*2.5,s*2.5,s*1.6,12,DM,0,-s*6.6,0,Math.PI/2);
+    g.userData.gearL=gL; g.userData.gearR=gR; g.userData.gearN=gN;
   }
   else{ // a380
-    // Double-deck superjumbo with 4 GE Alliance engines
     box(s*9,s*11,s*67,BM,0,0,0);
     cone(s*4.5,s*22,12,BM,0,0,s*44,-Math.PI/2);
     box(s*6,s*6,s*12,BM,0,s*1,-s*39);
-    // Two decks of windows
     box(s*7,s*4,s*15,WM,0,s*8,s*16);
     box(s*7,s*4,s*15,WM,0,s*3,s*16);
     const nd=18;
@@ -1589,7 +1725,6 @@ function buildPlane(id){
       });
     }
     [-1,1].forEach(side=>{
-      // Massive wings
       const wi=new THREE.Mesh(new THREE.BoxGeometry(s*22,s*1.6,s*16),BM);
       wi.position.set(side*s*19,0,s*4); wi.castShadow=true; g.add(wi);
       const wo=new THREE.Mesh(new THREE.BoxGeometry(s*18,s*1.1,s*12),BM);
@@ -1600,7 +1735,6 @@ function buildPlane(id){
       navL(side*s*61,-s*1,-s*4,side);
       const ws=new THREE.Mesh(new THREE.BoxGeometry(s*38,s*1.8,s*2),AM);
       ws.position.set(side*s*32,0,s*4); g.add(ws);
-      // 4 engines — 2 per side
       [s*22,s*40].forEach(ex=>{
         cyl(s*5,s*4.5,s*26,12,EM,side*ex,-s*6,s*6,Math.PI/2);
         const inF=new THREE.Mesh(new THREE.CircleGeometry(s*5,12),DM);
@@ -1614,21 +1748,81 @@ function buildPlane(id){
     box(s*2,s*17,s*15,BM,0,s*13.5,-s*37);
     box(s*1.6,s*14,s*6,AM,0,s*13,-s*44.5);
     [-1,1].forEach(side=>{box(s*18,s*1.2,s*10,BM,side*s*14,s*7,-s*35);});
-    // 6-wheel bogies
-    [-s*8,s*8].forEach(bx=>{
-      [-s*6,0,s*6].forEach(bz=>{cyl(s*1.2,s*1.2,s*1.6,10,DM,bx,-s*7,bz+s*14,Math.PI/2);});
-      cyl(s*1,s*1,s*8,6,EM,bx,-s*4,s*14);
+    // 6-wheel bogies as gear groups
+    addStrobe(0,s*18,-s*37); addStrobe(0,0,s*48);
+    const gL=mkGearGrp(s*8,-s*3,s*14);
+    const gR=mkGearGrp(-s*8,-s*3,s*14);
+    const gN=mkGearGrp(0,-s*3,-s*20);
+    [gL,gR].forEach((gg,si)=>{
+      const sx=si===0?1:-1;
+      gcyl(gg,s*1,s*1,s*8,6,EM,0,-s*4,0);
+      [-s*6,0,s*6].forEach(bz=>{ gcyl(gg,s*1.2,s*1.2,s*1.6,10,DM,0,-s*7,bz,Math.PI/2); });
     });
-    cyl(s*1,s*1,s*8,6,EM,0,-s*5,-s*20);
-    [-s*3.5,0,s*3.5].forEach(bz=>{cyl(s*1.2,s*1.2,s*1.6,10,DM,0,-s*8.5,bz-s*20,Math.PI/2);});
+    gcyl(gN,s*1,s*1,s*8,6,EM,0,-s*4,0);
+    [-s*3.5,0,s*3.5].forEach(bz=>{ gcyl(gN,s*1.2,s*1.2,s*1.6,10,DM,0,-s*7,bz,Math.PI/2); });
+    g.userData.gearL=gL; g.userData.gearR=gR; g.userData.gearN=gN;
   }
   return g;
 }
-
 // ═══ SPAWN PLANE ════════════════════════════════════════════════
 let plane=buildPlane(G.planeId);
 plane.position.set(AIRPORTS[0].x,GY,AIRPORTS[0].z+3000);
 S.add(plane);
+
+// ── PLAYER PLANE LIGHTS ─────────────────────────────────────────
+// Single landing PointLight (cheaper than SpotLight) + emissive nav spheres
+const landingLight1=new THREE.PointLight(0xffffff,0,120000);
+S.add(landingLight1);
+// Strobe/nav emissive meshes attached to plane group later
+const strobeL=new THREE.PointLight(0xffffff,0,6000);
+const strobeR=new THREE.PointLight(0xffffff,0,6000);
+S.add(strobeL); S.add(strobeR);
+const navRed  =new THREE.PointLight(0xff2200,0,4000);
+const navGreen=new THREE.PointLight(0x00ee44,0,4000);
+S.add(navRed); S.add(navGreen);
+const landingLight2=landingLight1; // alias, removed second spotlight
+
+function updatePlaneLights(){
+  const isNight=G.timeOfDay<0.18||G.timeOfDay>0.82;
+  const lightOn=isNight||G.alt>2000;
+  const s=plane.userData.scale||1;
+  const fwd=new THREE.Vector3(0,0,1).applyQuaternion(plane.quaternion);
+  const up =new THREE.Vector3(0,1,0).applyQuaternion(plane.quaternion);
+  const right=new THREE.Vector3(1,0,0).applyQuaternion(plane.quaternion);
+  const ppos=plane.position;
+
+  // Landing PointLight — ahead of nose
+  const nosePos=ppos.clone().addScaledVector(fwd,35*s);
+  landingLight1.position.copy(nosePos).addScaledVector(fwd,3000);
+  landingLight1.intensity=lightOn?4.5:0;
+
+  // Wing PointLight strobes
+  const strobePulse=Math.sin(Date.now()*0.008)>0.7?1:0;
+  const strWing=28*s;
+  strobeL.position.copy(ppos).addScaledVector(right,-strWing);
+  strobeR.position.copy(ppos).addScaledVector(right, strWing);
+  strobeL.intensity=strobeR.intensity=lightOn?strobePulse*4:0;
+
+  // Nav PointLights (wingtips)
+  navRed.position.copy(ppos).addScaledVector(right,-strWing);
+  navGreen.position.copy(ppos).addScaledVector(right, strWing);
+  navRed.intensity=navGreen.intensity=lightOn?1.5:0;
+
+  // Animate emissive strobe meshes on the plane model
+  if(plane.userData.strobeMeshes){
+    plane.userData.strobeMeshes.forEach(m=>{
+      m.visible=lightOn&&(strobePulse>0);
+    });
+  }
+  // Nav light meshes always match lightOn
+  plane.traverse(obj=>{
+    if(!obj.isMesh||!obj.material) return;
+    const c=obj.material.color&&obj.material.color.getHex();
+    if(c===0xff0000||c===0x00ff00){
+      obj.visible=true; // always show nav colors
+    }
+  });
+}
 
 // ═══ INPUT ══════════════════════════════════════════════════════
 document.addEventListener('keydown',e=>{
@@ -1649,6 +1843,18 @@ document.addEventListener('keydown',e=>{
     notify(G.spoilers?'Spoilers EXTENDED — braking!':'Spoilers RETRACTED','#ffd700');
     document.getElementById('hSpoil').textContent=G.spoilers?'EXT':'OFF';
     document.getElementById('hSpoil').style.color=G.spoilers?'#ff4060':'#607a90';
+  }
+  if(e.code==='KeyG'){
+    if(plane.userData.gearFixed){
+      notify('Fixed gear — cannot retract!','#ffd700');
+    } else if(G.onGround && G.gearDown){
+      notify('Cannot retract gear on ground!','#ff4060');
+    } else {
+      G.gearDown=!G.gearDown;
+      notify(G.gearDown?'Gear DOWN ▼ — deploying':'Gear UP ▲ — retracting', G.gearDown?'#00ff9d':'#ffd700');
+      document.getElementById('hGear').textContent=G.gearDown?'DOWN':'UP';
+      document.getElementById('hGear').style.color=G.gearDown?'#00ff9d':'#ff4060';
+    }
   }
   if(e.code==='KeyP'){
     if(!G.onGround){
@@ -1673,14 +1879,19 @@ const WORLD_OFFSETS={1:0,2:W2Z,3:W3Z};
 function tryPortal(){
   if(!G.onGround||!G.nearAP){notify('Must be at an airport to use the portal!','#ff4060');return;}
   const others=[1,2,3].filter(w=>w!==G.currentWorld);
-  const btns=others.map(w=>({t:WORLD_NAMES[w],c:w===2?'btn':w===3?'ybtn':'gbtn',a:()=>warpToWorld(w)}));
-  btns.push({t:'✕ Cancel',c:'rbtn',a:closeMsg});
+  const btns=others.map(w=>{
+    // Highlight the destination world if we have a cross-world job
+    const isJobWorld=G.jobActive&&G.destAP&&(G.destAP.world||0)===w;
+    const label=WORLD_NAMES[w]+(isJobWorld?' ✈ JOB DEST':'');
+    return{t:label,c:isJobWorld?'gbtn':w===2?'btn':w===3?'ybtn':'gbtn',a:()=>warpToWorld(w)};
+  });
+  const jobHint=G.jobActive&&G.destAP&&G.destAP.world!==G.currentWorld
+    ?`<br><span style="color:#ffd700;font-size:11px">✈ Active job to W${G.destAP.world} — ${G.destAP.code}. Warp there to deliver!</span>`
+    :'';
   showMsg('🌐 World Portal',
     `You are in <b style="color:#00d4ff">${WORLD_NAMES[G.currentWorld]}</b><br><br>
-    <span style="color:#607a90;font-size:11px">Each world has 10 airports and unique terrain.<br>
-    Jobs are available at every airport across all worlds.<br>
-    Press X at any airport to open this portal.</span>`,
-    btns
+    Warp to a new world — your aircraft travels with you.${jobHint}`,
+    [...btns,{t:'✕ Cancel',c:'rbtn',a:closeMsg}]
   );
 }
 
@@ -1689,11 +1900,25 @@ function warpToWorld(w){
   AIRPORTS=ALL_AIRPORTS.filter(a=>a.world===w);
   G.AIRPORTS=AIRPORTS;
   G.currentWorld=w;
+  buildWorldAirports(w); // lazy-build if not yet built
+  showWorldAirports(w);
   const dest=AIRPORTS[0];
   plane.position.set(dest.x, GY, dest.z+3000);
   G.yaw=0; G.spd=0; G.thr=0; G.velY=0;
   G.onGround=true; G.pitch=0; G.roll=0;
-  G.nearAP=null; G.destAP=null;
+  G.nearAP=null;
+  // Only clear destAP if it wasn't a cross-world job pointing to THIS world
+  if(G.destAP && G.destAP.world !== w){
+    // Keep the destination — player is mid cross-world job, don't wipe it
+  } else if(!G.jobActive){
+    G.destAP=null;
+  }
+  // If we just arrived at the destination world, restore HUD dest label
+  if(G.jobActive && G.destAP && G.destAP.world === w){
+    document.getElementById('hDest').textContent=G.destAP.code+' — '+G.destAP.name;
+    document.getElementById('hDest').style.color='#00ff9d';
+    notify('Now in '+WORLD_NAMES[w]+' — fly to '+G.destAP.code+' to complete your job!','#00d4ff');
+  }
   if(!G.visitedWorlds.includes(w)){G.visitedWorlds.push(w);checkAchievements();}
   document.getElementById('worldBadge').textContent=WORLD_NAMES[w];
   // Update sky/fog for new world
@@ -1832,20 +2057,35 @@ function triggerCrash(reason){
 
 
 // ═══ 3D PARTICLE SYSTEM ══════════════════════════════════════════
-const PARTICLES=[]; // {mesh, vx,vy,vz, life, maxLife, shrink, gravity}
+const PARTICLES=[];
+const PARTICLE_CAP=60; // hard cap — prevents runaway lag
+// Shared geometry pool keyed by rounded size
+const _PGEO_POOL={};
+function _getParticleGeo(size){
+  const k=Math.round(size/50)*50; // bucket to nearest 50
+  if(!_PGEO_POOL[k]) _PGEO_POOL[k]=new THREE.SphereGeometry(k||50,4,3);
+  return _PGEO_POOL[k];
+}
+// Shared material pool keyed by color+opacity bucket
+const _PMAT_POOL={};
+function _getParticleMat(col,opacity){
+  const k=col+'_'+Math.round(opacity*4)/4;
+  if(!_PMAT_POOL[k]) _PMAT_POOL[k]=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity,depthWrite:false});
+  return _PMAT_POOL[k];
+}
 
 function spawn3DParticle(x,y,z,opts={}){
+  if(PARTICLES.length>=PARTICLE_CAP) return null; // drop when capped
   const size=opts.size||200;
   const col=opts.col||0x888888;
-  const geo=new THREE.SphereGeometry(size,5,4);
-  const mat=new THREE.MeshLambertMaterial({
-    color:col, transparent:true, opacity:opts.opacity||0.75,
-    depthWrite:false
-  });
+  const geo=_getParticleGeo(size);
+  const mat=_getParticleMat(col,opts.opacity||0.75);
   const m=new THREE.Mesh(geo,mat);
-  m.position.set(x,y,z); S.add(m);
+  m.position.set(x,y,z);
+  m.scale.setScalar(size/Math.max(1,(Math.round(size/50)*50)));
+  S.add(m);
   PARTICLES.push({
-    mesh:m, mat,
+    mesh:m,
     vx:(Math.random()-.5)*(opts.spread||400),
     vy:opts.vy!=null?opts.vy:(80+Math.random()*200),
     vz:(Math.random()-.5)*(opts.spread||400),
@@ -1853,7 +2093,9 @@ function spawn3DParticle(x,y,z,opts={}){
     decay:opts.decay||0.004,
     grow:opts.grow||1.012,
     gravity:opts.gravity!=null?opts.gravity:-1.5,
-    col,
+    baseOpacity:opts.opacity||0.75,
+    poolCol:col,
+    poolOp:Math.round((opts.opacity||0.75)*4)/4,
   });
   return m;
 }
@@ -1862,15 +2104,24 @@ function updateParticles(){
   for(let i=PARTICLES.length-1;i>=0;i--){
     const p=PARTICLES[i];
     p.life-=p.decay;
-    if(p.life<=0){S.remove(p.mesh);p.mesh.geometry.dispose();p.mat.dispose();PARTICLES.splice(i,1);continue;}
+    if(p.life<=0){S.remove(p.mesh);PARTICLES.splice(i,1);continue;}
     p.vx*=0.985; p.vz*=0.985;
     p.vy+=p.gravity;
     p.mesh.position.x+=p.vx;
     p.mesh.position.y+=p.vy;
     p.mesh.position.z+=p.vz;
-    const s=p.grow;
-    p.mesh.scale.multiplyScalar(s);
-    p.mat.opacity=p.life*0.7;
+    p.mesh.scale.multiplyScalar(p.grow);
+    // Clone mat only if opacity needs to change (avoid per-frame new mat)
+    const targetOp=p.life*p.baseOpacity;
+    const m=p.mesh.material;
+    if(Math.abs(m.opacity-targetOp)>0.02){
+      if(m.userData&&m.userData.shared){
+        // clone once to own this particle's opacity
+        p.mesh.material=m.clone();
+        p.mesh.material.userData={shared:false};
+      }
+      p.mesh.material.opacity=targetOp;
+    }
   }
 }
 
@@ -1887,12 +2138,12 @@ function updateSmokeColumns(dt){
     col.timer-=dt;
     col.spawnT-=dt;
     if(col.spawnT<=0){
-      col.spawnT=0.18; // spawn puff every 0.18s
+      col.spawnT=0.5; // spawn puff every 0.5s (perf)
       if(col.timer>0){
         const spread=400, h=1500+Math.random()*2000;
         spawn3DParticle(
           col.x+(Math.random()-.5)*spread, GY+h*0.4, col.z+(Math.random()-.5)*spread,
-          {size:350+Math.random()*250,col:0x404040,opacity:0.55,
+          {size:120+Math.random()*80,col:0x404040,opacity:0.4,
            vy:60+Math.random()*80, spread:120, decay:0.0018, grow:1.018, gravity:0}
         );
       }
@@ -2112,21 +2363,21 @@ function updateTowerCollapses(dt){
 
     // Dust rings blasting outward from collapse front
     tw._dustRingTimer += dt;
-    if(tw._dustRingTimer > 0.055){
+    if(tw._dustRingTimer > 0.12){
       tw._dustRingTimer = 0;
-      const ringCount = 18;
+      const ringCount = 8;
       for(let i=0;i<ringCount;i++){
         const a = i*(Math.PI*2/ringCount)+Math.random()*0.25;
-        const spd = 900+Math.random()*700;
+        const spd = 400+Math.random()*300;
         const p = {
           mesh: null,
-          vx: Math.cos(a)*spd, vy: 15+Math.random()*50, vz: Math.sin(a)*spd,
-          life:1.0, decay:0.0016+Math.random()*0.001, grow:1.028, gravity:0.15,
+          vx: Math.cos(a)*spd, vy: 10+Math.random()*30, vz: Math.sin(a)*spd,
+          life:1.0, decay:0.003+Math.random()*0.001, grow:1.018, gravity:0.15,
           col:Math.random()<0.5?0xaa8855:0x777777
         };
-        const sz=tw.h*(0.045+Math.random()*0.04);
+        const sz=tw.h*(0.018+Math.random()*0.016);
         const geo=new THREE.SphereGeometry(sz,5,4);
-        const mat=new THREE.MeshLambertMaterial({color:p.col,transparent:true,opacity:0.72,depthWrite:false});
+        const mat=new THREE.MeshLambertMaterial({color:p.col,transparent:true,opacity:0.6,depthWrite:false});
         const m=new THREE.Mesh(geo,mat); 
         m.position.set(tw.x+Math.cos(a)*tw.h*0.03, frontY+(Math.random()-.5)*tw.h*0.04, tw.z+Math.sin(a)*tw.h*0.03);
         S.add(m);
@@ -2134,12 +2385,12 @@ function updateTowerCollapses(dt){
         PARTICLES.push(p);
       }
       // Debris at collapse front
-      if(Math.random()<0.55) spawnDebris(tw.x, frontY, tw.z, 5, tw.h*0.022);
+      if(Math.random()<0.35) spawnDebris(tw.x, frontY, tw.z, 3, tw.h*0.014);
       // Rising fire/smoke from core
-      if(Math.random()<0.45){
+      if(Math.random()<0.3){
         spawn3DParticle(tw.x+(Math.random()-.5)*150, frontY+tw.h*0.04, tw.z+(Math.random()-.5)*150,
-          {size:tw.h*0.038, col:Math.random()<0.35?0xff4400:0x1a1a1a,
-           opacity:0.82, vy:140+Math.random()*220, spread:120, decay:0.003, grow:1.022, gravity:-0.8});
+          {size:tw.h*0.02, col:Math.random()<0.35?0xff4400:0x1a1a1a,
+           opacity:0.65, vy:80+Math.random()*140, spread:100, decay:0.005, grow:1.015, gravity:-0.5});
       }
     }
 
@@ -2331,6 +2582,30 @@ function updateWeather(){
 }
 
 // ═══ HUD ════════════════════════════════════════════════════════
+// ── GROUND STATE — runs every frame even when paused ─────────────
+// nearAP detection and arrival check must NOT be inside fly() because
+// fly() is paused whenever a menu is open (showMsg sets G.paused=true).
+// Players often land then open the menu — if arrival check is paused they
+// never get credit. Separate function called directly from loop().
+function updateGroundState(){
+  // Update nearest airport every frame (current world only)
+  G.nearAP=null;
+  let best=AP_R;
+  ALL_AIRPORTS.filter(a=>a.world===G.currentWorld).forEach(ap=>{
+    const d=Math.hypot(plane.position.x-ap.x,plane.position.z-ap.z);
+    if(d<best){G.nearAP=ap;best=d;}
+  });
+
+  // Arrival check — fires when on ground near destination in correct world
+  if(G.jobActive&&G.destAP&&G.onGround){
+    const destWorld=G.destAP.world||G.currentWorld; // safe fallback for old saves
+    if(destWorld===G.currentWorld){
+      const d=Math.hypot(plane.position.x-G.destAP.x,plane.position.z-G.destAP.z);
+      if(d<ARRIVE_R) checkArrival();
+    }
+  }
+}
+
 function updateHUD(){
   document.getElementById('hMoney').textContent='$'+G.money.toLocaleString();
   document.getElementById('hPlane').textContent=PLANES[G.planeId].name;
@@ -2367,6 +2642,19 @@ function updateHUD(){
   document.getElementById('sEarned').textContent='$'+G.totalEarned.toLocaleString();
   document.getElementById('sDist').textContent=Math.round(G.distFlown/1000)+' km';
   document.getElementById('sLand').textContent=G.landings;
+  // Status bar — uses G.nearAP from updateGroundState (runs even when paused)
+  const st=document.getElementById('hStat');
+  if(G.onGround){
+    if(G.nearAP){st.textContent='AT '+G.nearAP.code;st.style.color='#00d4ff';}
+    else{st.textContent=G.spd>1?'Taxiing':'Parked';st.style.color='#a0c8e0';}
+  } else {
+    if(!G.jobActive){st.textContent='Flying';st.style.color='#a0c8e0';}
+    else if(G.destAP&&(G.destAP.world||1)!==G.currentWorld){
+      st.textContent='Wrong World — Use Portal (X)';st.style.color='#ff9900';
+    } else {
+      st.textContent='En Route to '+(G.destAP?G.destAP.code:'?');st.style.color='#ffd700';
+    }
+  }
 }
 
 // ═══ FLIGHT PHYSICS ═════════════════════════════════════════════
@@ -2433,6 +2721,7 @@ function fly(){
     G.roll*=0.92; // wings level
     if(G.thr<0.5){ G.thr+=0.005; } // maintain speed
   }
+
 
   // Wind effect (only in air)
   if(!G.onGround){
@@ -2562,50 +2851,13 @@ function fly(){
   plane.rotation.x = -G.pitch;  // pitch   — nose UP when pitch>0 (negative X = front goes up)
   plane.rotation.z = -G.roll;   // roll    — right bank when roll>0 (positive = left side rises)
 
-  // Arrival check
-  if(G.jobActive&&G.destAP){
-    const d=Math.hypot(plane.position.x-G.destAP.x,plane.position.z-G.destAP.z);
-    if(d<AP_R&&G.onGround){
-      const pay=G.job.pay, dest=G.destAP;
-      G.money+=pay; G.jobsDone++; G.totalEarned+=pay;
-      G.jobActive=false; G.destAP=null; G.job=null;
-      saveGame();
-      document.getElementById('hDest').textContent='—';
-      document.getElementById('hDest').style.color='#607a90';
-      updateHUD();
-      checkAchievements();
-      setTimeout(()=>showMsg('✅ Job Complete!',
-        `Delivered to <span style="color:#00d4ff">${dest.name}</span>!<br><br>
-        <span style="color:#ffd700;font-family:Orbitron;font-size:24px">+$${pay.toLocaleString()}</span><br><br>
-        Balance: <span style="color:#00ff9d">$${G.money.toLocaleString()}</span> &nbsp;·&nbsp; Jobs: <b>${G.jobsDone}</b><br>
-        <span style="color:#607a90;font-size:11px">Don't forget to refuel! (press R at the airport)</span>`,
-        [{t:'🎉 Continue',c:'gbtn',a:closeMsg}]
-      ),500);
-    }
-  }
-
-  // Nearest airport (current world only)
-  G.nearAP=null; let best=AP_R;
-  ALL_AIRPORTS.filter(a=>a.world===G.currentWorld).forEach(ap=>{
-    const d=Math.hypot(plane.position.x-ap.x,plane.position.z-ap.z);
-    if(d<best){G.nearAP=ap;best=d;}
-  });
+  // (nearAP + arrival check moved to updateGroundState — runs even when paused)
 
   // Bounds — clamp within current world region
   const B=490000;
   const wz=WORLD_OFFSETS[G.currentWorld]||0;
   plane.position.x=Math.max(-B,Math.min(B,plane.position.x));
   plane.position.z=Math.max(wz-B,Math.min(wz+B,plane.position.z));
-
-  // Status
-  const st=document.getElementById('hStat');
-  if(G.onGround){
-    if(G.nearAP){st.textContent='AT '+G.nearAP.code;st.style.color='#00d4ff';}
-    else{st.textContent=G.spd>1?'Taxiing':'Parked';if(!G.jobActive)st.style.color='#a0c8e0';}
-  } else {
-    if(!G.jobActive){st.textContent='Flying';st.style.color='#a0c8e0';}
-    else{st.textContent='En Route';st.style.color='#ffd700';}
-  }
 
   // Camera
   if(G.camMode===0){
@@ -2648,9 +2900,9 @@ function updateDayNight(){
 
   // Sky colors
   const skyDay=new THREE.Color(0x4a90cc);
-  const skyNight=new THREE.Color(0x010610);
-  const skySunrise=new THREE.Color(0xe06030);
-  const skySunset=new THREE.Color(0xd04820);
+  const skyNight=new THREE.Color(0x020818);
+  const skySunrise=new THREE.Color(0xff6030);
+  const skySunset=new THREE.Color(0xe83010);
   let sky;
   if(t<0.18||t>0.82){
     sky=skyNight;
@@ -2669,13 +2921,17 @@ function updateDayNight(){
   S.background=sky;
   S.fog.color.copy(sky);
   sun.intensity=Math.max(0,dayFrac)*1.4;
-  ambL.intensity=isNight?0.08:0.18+dayFrac*.5;
+  ambL.intensity=isNight?0.28:0.18+dayFrac*.5;  // brighter night ambient
+  moonLight.intensity=isNight?0.55:0;
   sun.position.x=Math.cos(t*Math.PI*2-Math.PI*.5)*120000;
   sun.position.y=Math.sin(t*Math.PI*2-Math.PI*.5)*120000;
+  moonLight.position.x=-Math.cos(t*Math.PI*2+Math.PI*.5)*80000;
+  moonLight.position.y= Math.abs(Math.sin(t*Math.PI*2+Math.PI*.5))*80000+10000;
 
   // Stars
   STARS.visible=isNight||(nightFrac>0.5);
-  STARS.material.opacity=Math.min(1,nightFrac*2.5);
+  STARS.material.opacity=Math.min(1,nightFrac*3.5);
+  STARS.material.size=isNight?500:300;
   STARS.material.transparent=true;
 
   // Toggle city lights, runway lights, beacon lights
@@ -2685,7 +2941,7 @@ function updateDayNight(){
     NIGHT_LIGHTS.forEach(({mat,dayCol,nightCol})=>{
       mat.color.setHex(wantLights?nightCol:dayCol);
       mat.emissive.setHex(wantLights?nightCol:0x000000);
-      mat.emissiveIntensity=wantLights?0.9:0;
+      mat.emissiveIntensity=wantLights?1.4:0;
     });
     // Runway lights brightness
     BEACONS.forEach(mat=>{
@@ -2726,17 +2982,320 @@ function driftClouds(){
 
 // ═══ MAIN LOOP ═══════════════════════════════════════════════════
 let _lastT=performance.now();
+// ═══ NPC PLANES ══════════════════════════════════════════════════
+const NPCS=[];
+const NPC_COLORS=[0xcc2222,0x2244cc,0x228844,0xcc8800,0x884488,0x226688,0xcc5500];
+
+function buildNPCMesh(typeId){
+  const g=new THREE.Group();
+  g.rotation.order='YXZ';
+  const cols=NPC_COLORS[typeId%NPC_COLORS.length];
+  const M=c=>new THREE.MeshLambertMaterial({color:c});
+  const SC=[1,1.1,1.35,1.55,1.85,2.1,3.6][typeId]||1;
+  const s=SC;
+  const BM=M(0xeeeeff), AM=M(cols), EM=M(0x333333), DM=M(0x111111);
+  const box=(w,h,d,mat,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);g.add(m);return m;};
+  const cyl=(rt,rb,h,seg,mat,x,y,z,rx)=>{rx=rx||0;const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),mat);m.rotation.x=rx;m.position.set(x,y,z);g.add(m);return m;};
+  // Simple fuselage + wings + tail for all NPC types
+  box(s*5,s*5.5,s*44,BM,0,0,0);
+  // Wings
+  [-1,1].forEach(side=>{
+    box(s*18,s*1.1,s*9,BM,side*s*15,0,s*3);
+    box(s*10,s*0.8,s*6,BM,side*s*29,-s*0.4,-s*1);
+    box(s*22,s*1.2,s*1.2,AM,side*s*18,0,s*3);
+    // Nav lights
+    const nl=new THREE.Mesh(new THREE.SphereGeometry(s*1.5,6,6),M(side>0?0xff0000:0x00ff00));
+    nl.position.set(side*s*32,0,-s*1); g.add(nl);
+  });
+  // Tail
+  box(s*1.3,s*12,s*8,BM,0,s*8,-s*25);
+  box(s*1.1,s*10,s*4,AM,0,s*7.5,-s*29);
+  [-1,1].forEach(side=>{box(s*10,s*0.9,s*5,BM,side*s*8,s*4,-s*24);});
+  // Engines (under wing)
+  if(typeId>=4){
+    [-1,1].forEach(side=>{
+      cyl(s*3,s*2.5,s*18,10,EM,side*s*16,-s*4,s*4,Math.PI/2);
+      const exF=new THREE.Mesh(new THREE.CircleGeometry(s*2.2,10),M(0xff5500));
+      exF.material.transparent=true; exF.material.opacity=0.7;
+      exF.rotation.x=Math.PI; exF.position.set(side*s*16,-s*4,-s*5); g.add(exF);
+    });
+  } else {
+    // Props
+    cyl(s*2.5,s*3,s*5,8,EM,0,0,s*25,Math.PI/2);
+    const pd=new THREE.Mesh(new THREE.CircleGeometry(s*5.5,12),M(0x223322));
+    pd.material.transparent=true; pd.material.opacity=0.35;
+    pd.position.set(0,0,s*28); g.add(pd);
+  }
+  // Nose
+  const ns=new THREE.Mesh(new THREE.ConeGeometry(s*2.8,s*14,10),BM);
+  ns.rotation.x=-Math.PI/2; ns.position.set(0,0,s*29); g.add(ns);
+  // Gear groups (main L/R + nose)
+  const mkGG=(px,py,pz)=>{const gg=new THREE.Group();gg.position.set(px,py,pz);g.add(gg);return gg;};
+  const gcyl=(grp,rt,rb,h,seg,mat,x,y,z,rx)=>{rx=rx||0;const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),mat);m.rotation.x=rx;m.position.set(x,y,z);grp.add(m);};
+  const gL=mkGG(s*4,-s*2,s*10);
+  const gR=mkGG(-s*4,-s*2,s*10);
+  const gN=mkGG(0,-s*2,-s*12);
+  [gL,gR].forEach(gg=>{gcyl(gg,s*.7,s*.7,s*5,6,EM,0,-s*2.5,0);gcyl(gg,s*2,s*2,s*1.3,10,DM,0,-s*5,0,Math.PI/2);});
+  gcyl(gN,s*.7,s*.7,s*5,6,EM,0,-s*2.5,0);gcyl(gN,s*2,s*2,s*1.3,10,DM,0,-s*5,0,Math.PI/2);
+  g.userData.gearL=gL; g.userData.gearR=gR; g.userData.gearN=gN;
+  g.userData.scale=s;
+  // Emissive nav/strobe meshes (no PointLights — huge perf win)
+  const navLm=new THREE.Mesh(new THREE.SphereGeometry(s*2.2,5,4),new THREE.MeshBasicMaterial({color:0xff2200}));
+  navLm.position.set(-s*30,0,0); g.add(navLm);
+  const navRm=new THREE.Mesh(new THREE.SphereGeometry(s*2.2,5,4),new THREE.MeshBasicMaterial({color:0x00ee44}));
+  navRm.position.set( s*30,0,0); g.add(navRm);
+  const strobeMesh=new THREE.Mesh(new THREE.SphereGeometry(s*2.5,5,4),new THREE.MeshBasicMaterial({color:0xffffff}));
+  strobeMesh.position.set(0,s*4,-s*24); g.add(strobeMesh);
+  const noseLight=new THREE.Mesh(new THREE.SphereGeometry(s*3,5,4),new THREE.MeshBasicMaterial({color:0xffffff}));
+  noseLight.position.set(0,0,s*32); g.add(noseLight);
+  g.userData.navLm=navLm; g.userData.navRm=navRm; g.userData.strobeMesh=strobeMesh; g.userData.noseLightMesh=noseLight;
+  // Start invisible
+  navLm.visible=navRm.visible=strobeMesh.visible=noseLight.visible=false;
+  return g;
+}
+
+function spawnNPCs(world){
+  const aps=ALL_AIRPORTS.filter(a=>a.world===world);
+  if(aps.length<2) return;
+  const count=15; // 15 NPCs per world
+  for(let i=0;i<count;i++){
+    const typeId=Math.floor(Math.random()*7);
+    const srcAP=aps[i%aps.length];
+    const destAP=aps[(i+1+Math.floor(Math.random()*(aps.length-1)))%aps.length];
+    const spds=[36,52,68,96,170,230,300];
+    const spd=(spds[typeId]||80)*(0.85+Math.random()*0.3);
+    const mesh=buildNPCMesh(typeId);
+    // Heavily favour cruise so NPCs are visible immediately
+    const r=Math.random();
+    const startPhase=r<0.6?'cruise':r<0.8?'climb':r<0.9?'descend':'parked';
+    const cruiseAlt=GY+9000+Math.random()*18000;
+    const npc={
+      mesh, typeId, world,
+      x:srcAP.x+(Math.random()-.5)*8000,
+      y:GY,
+      z:srcAP.z+(Math.random()-.5)*8000,
+      yaw:Math.random()*Math.PI*2,
+      spd, cruiseAlt,
+      srcAP, destAP,
+      phase:'parked', phaseTimer:Math.random()*5,
+      gearT:1.0,
+      pitch:0,
+      _strobOff:Math.random()*Math.PI*2,
+    };
+    if(startPhase==='cruise'){
+      npc.y=cruiseAlt;
+      npc.phase='cruise';
+      npc.gearT=0; npc._gearAnim=0;
+      // Scatter NPCs across the whole map between airports
+      const frac=Math.random();
+      npc.x=srcAP.x+(destAP.x-srcAP.x)*frac+(Math.random()-.5)*15000;
+      npc.z=srcAP.z+(destAP.z-srcAP.z)*frac+(Math.random()-.5)*15000;
+      const dx=destAP.x-npc.x, dz=destAP.z-npc.z;
+      npc.yaw=Math.atan2(dx,dz);
+    } else if(startPhase==='climb'){
+      npc.y=GY+2000+Math.random()*4000;
+      npc.phase='climb'; npc.gearT=0; npc._gearAnim=0;
+      const dx=destAP.x-srcAP.x, dz=destAP.z-srcAP.z;
+      npc.yaw=Math.atan2(dx,dz);
+    } else if(startPhase==='descend'){
+      npc.y=cruiseAlt*0.5+Math.random()*cruiseAlt*0.4;
+      npc.phase='descend';
+      npc.x=destAP.x+(Math.random()-.5)*60000;
+      npc.z=destAP.z+(Math.random()-.5)*60000;
+      npc.gearT=0; npc._gearAnim=0;
+      const dx=destAP.x-npc.x, dz=destAP.z-npc.z;
+      npc.yaw=Math.atan2(dx,dz);
+    }
+    mesh.position.set(npc.x,npc.y,npc.z);
+    S.add(mesh);
+    NPCS.push(npc);
+  }
+}
+// Spawn NPCs for all worlds at init
+[1,2,3].forEach(w=>spawnNPCs(w));
+
+function applyNPCGear(npc){
+  const target=npc.gearT; // 1=down 0=up
+  if(npc.mesh.userData.gearL){
+    npc.mesh.userData.gearL.rotation.z= (1-target)*Math.PI*0.52;
+    npc.mesh.userData.gearR.rotation.z=-(1-target)*Math.PI*0.52;
+    npc.mesh.userData.gearN.rotation.x=-(1-target)*Math.PI*0.5;
+    npc.mesh.userData.gearL.rotation.x=(1-target)*0.35;
+    npc.mesh.userData.gearR.rotation.x=(1-target)*0.35;
+  }
+}
+
+function steerNPC(npc,dt){
+  const dx=npc.destAP.x-npc.x, dz=npc.destAP.z-npc.z;
+  let targetYaw=Math.atan2(dx,dz);
+  let diff=targetYaw-npc.yaw;
+  while(diff>Math.PI)diff-=Math.PI*2;
+  while(diff<-Math.PI)diff+=Math.PI*2;
+  npc.yaw+=diff*Math.min(1,dt*0.9);
+  npc.x+=Math.sin(npc.yaw)*npc.spd*dt;
+  npc.z+=Math.cos(npc.yaw)*npc.spd*dt;
+}
+
+function updateNPCs(dt){
+  for(const npc of NPCS){
+    // Show/hide based on world
+    npc.mesh.visible=(npc.world===G.currentWorld);
+    if(npc.world!==G.currentWorld) continue;
+
+    const dist2dest=Math.hypot(npc.destAP.x-npc.x, npc.destAP.z-npc.z);
+
+    switch(npc.phase){
+      case 'parked':
+        npc.pitch=0;
+        npc.phaseTimer-=dt;
+        if(npc.phaseTimer<=0){
+          npc.phase='takeoff';
+          npc.phaseTimer=10;
+          const dx=npc.destAP.x-npc.x, dz=npc.destAP.z-npc.z;
+          npc.yaw=Math.atan2(dx,dz);
+          npc.gearT=1;
+        }
+        break;
+
+      case 'takeoff':
+        npc.y+=120*dt;
+        npc.x+=Math.sin(npc.yaw)*npc.spd*0.6*dt;
+        npc.z+=Math.cos(npc.yaw)*npc.spd*0.6*dt;
+        npc.pitch=0.18;
+        if(npc.y>=GY+2500){
+          npc.phase='climb';
+          npc.gearT=0; // gear up after takeoff
+        }
+        break;
+
+      case 'climb':
+        npc.y=Math.min(npc.cruiseAlt,npc.y+180*dt);
+        npc.pitch=0.12;
+        steerNPC(npc,dt);
+        if(npc.y>=npc.cruiseAlt-200) npc.phase='cruise';
+        break;
+
+      case 'cruise':
+        npc.pitch=0;
+        steerNPC(npc,dt);
+        if(dist2dest<35000) npc.phase='descend';
+        break;
+
+      case 'descend':
+        npc.y=Math.max(GY+1800,npc.y-160*dt);
+        npc.pitch=-0.1;
+        steerNPC(npc,dt);
+        if(dist2dest<9000){
+          npc.phase='approach';
+          npc.gearT=1; // gear down on approach
+        }
+        break;
+
+      case 'approach':
+        npc.y=Math.max(GY,npc.y-110*dt);
+        npc.pitch=-0.08;
+        steerNPC(npc,dt);
+        if(npc.y<=GY+5){
+          npc.y=GY;
+          npc.pitch=0;
+          npc.phase='landed';
+          npc.phaseTimer=4+Math.random()*6;
+          // Snap to airport and pick new destination
+          npc.x=npc.destAP.x+(Math.random()-.5)*3000;
+          npc.z=npc.destAP.z+(Math.random()-.5)*3000;
+          const aps=ALL_AIRPORTS.filter(a=>a.world===npc.world);
+          const oldDest=npc.destAP;
+          npc.srcAP=npc.destAP;
+          // Pick a new destination that isn't the current one
+          const candidates=aps.filter(a=>a.id!==oldDest.id);
+          npc.destAP=candidates[Math.floor(Math.random()*candidates.length)]||aps[0];
+        }
+        break;
+
+      case 'landed':
+        npc.phaseTimer-=dt;
+        if(npc.phaseTimer<=0) npc.phase='parked';
+        break;
+    }
+
+    // Smooth gear animation
+    const gearTarget=npc.gearT;
+    if(!npc._gearAnim) npc._gearAnim=npc.gearT;
+    npc._gearAnim+=(gearTarget-npc._gearAnim)*Math.min(1,dt*0.55);
+    // Override npc.gearT with animated value for rendering
+    const gearVis=npc._gearAnim;
+    if(npc.mesh.userData.gearL){
+      npc.mesh.userData.gearL.rotation.z= (1-gearVis)*Math.PI*0.52;
+      npc.mesh.userData.gearR.rotation.z=-(1-gearVis)*Math.PI*0.52;
+      npc.mesh.userData.gearN.rotation.x=-(1-gearVis)*Math.PI*0.5;
+      npc.mesh.userData.gearL.rotation.x=(1-gearVis)*0.35;
+      npc.mesh.userData.gearR.rotation.x=(1-gearVis)*0.35;
+    }
+
+    // Update mesh transform
+    npc.mesh.position.set(npc.x,npc.y,npc.z);
+    npc.mesh.rotation.order='YXZ';
+    npc.mesh.rotation.y=npc.yaw;
+    npc.mesh.rotation.x=-npc.pitch;
+    npc.mesh.rotation.z=0;
+
+    // Update NPC emissive nav/strobe lights (no PointLights = much faster)
+    if(npc.mesh.userData.navLm){
+      const npcNight=G.timeOfDay<0.18||G.timeOfDay>0.82;
+      const npcLightOn=npcNight||npc.y>GY+2000;
+      npc.mesh.userData.navLm.visible=npcLightOn;
+      npc.mesh.userData.navRm.visible=npcLightOn;
+      const strobePulse=Math.sin(Date.now()*0.008+npc._strobOff)>0.72;
+      npc.mesh.userData.strobeMesh.visible=npcLightOn&&strobePulse;
+      const landingOn=npcLightOn&&(npc.phase==='approach'||npc.phase==='takeoff'||npc.phase==='landed'||npc.y<GY+8000);
+      npc.mesh.userData.noseLightMesh.visible=landingOn;
+    }
+  }
+}
+
 function loop(){
   requestAnimationFrame(loop);
   const now=performance.now(), dt=Math.min((now-_lastT)/1000, 0.05); _lastT=now;
-  fly(); updateHUD(); updateDayNight(); atmos(); driftClouds(); drawMM(); updateWeather();
+  fly(); updateGroundState(); updateHUD(); updateDayNight(); atmos(); driftClouds(); drawMM(); updateWeather();
   updateApLabels(); drawInstruments();
   updateTowerCollapses(dt); updateParticles(); updateSmokeColumns(dt); updateEmgVehicles(dt);
+  updateNPCs(dt);
+  updatePlaneLights();
+
+  // Player gear animation
+  {
+    const gearTarget=G.gearDown?1:0;
+    G._gearT+=(gearTarget-G._gearT)*Math.min(1,dt*0.55);
+    const t=G._gearT;
+    if(plane.userData.gearL){
+      plane.userData.gearL.rotation.z= (1-t)*Math.PI*0.52;
+      plane.userData.gearR.rotation.z=-(1-t)*Math.PI*0.52;
+      plane.userData.gearN.rotation.x=-(1-t)*Math.PI*0.5;
+      plane.userData.gearL.rotation.x=(1-t)*0.35;
+      plane.userData.gearR.rotation.x=(1-t)*0.35;
+    }
+  }
   R.render(S,CAM);
 }
 
 // ═══ MENUS ═══════════════════════════════════════════════════════
 function openMenu(){
+  // Refresh nearAP before opening menu so it's always current
+  G.nearAP=null;
+  let best=AP_R;
+  ALL_AIRPORTS.filter(a=>a.world===G.currentWorld).forEach(ap=>{
+    const d=Math.hypot(plane.position.x-ap.x,plane.position.z-ap.z);
+    if(d<best){G.nearAP=ap;best=d;}
+  });
+  // Also run arrival check in case player opened menu right after landing
+  if(G.jobActive&&G.destAP&&G.onGround){
+    const dw=G.destAP.world||G.currentWorld;
+    if(dw===G.currentWorld){
+      const d=Math.hypot(plane.position.x-G.destAP.x,plane.position.z-G.destAP.z);
+      if(d<ARRIVE_R){ checkArrival(); return; } // job complete, arrival popup will show
+    }
+  }
+
   const near=G.nearAP;
   if(near&&G.onGround){
     G.curAP=near;
@@ -2787,30 +3346,58 @@ function openAchievements(){
 }
 
 function genJobs(fromAp){
-  // Generate jobs to destinations across ALL worlds
   const from = typeof fromAp==='number' ? ALL_AIRPORTS.find(a=>a.id===fromAp)||AIRPORTS[fromAp] : fromAp;
+  // Helper: intra-world distance (strips world Z offset so cross-world pay is fair)
+  const worldOff={1:0,2:W2Z,3:W3Z};
+  const intraDistKm=(a,b)=>{
+    const ax=a.x, az=a.z-(worldOff[a.world]||0);
+    const bx=b.x, bz=b.z-(worldOff[b.world]||0);
+    return Math.hypot(bx-ax, bz-az);
+  };
   return ALL_AIRPORTS
     .filter(a=>a.id!==from.id)
     .sort(()=>Math.random()-.5)
     .slice(0,7)
     .map(dest=>{
-      const dist=Math.hypot(dest.x-from.x,dest.z-from.z)+Math.abs(dest.world-from.world)*180000;
       const crossWorld=dest.world!==from.world;
-      const bonus=crossWorld?1.8:1;
-      const pay=Math.round(dist*(0.04+Math.random()*.04)*(1+G.planeId*.15)*bonus);
-      return{type:JOB_TYPES[Math.floor(Math.random()*JOB_TYPES.length)],destId:dest.id,pay,crossWorld,destWorld:dest.world};
+      const dist=intraDistKm(from,dest);
+      // Cross-world jobs pay a flat world-travel bonus on top of distance pay
+      const worldBonus=crossWorld?(dest.world===3?35000:25000):0;
+      const pay=Math.round((dist*(0.04+Math.random()*.04)*(1+G.planeId*.15))+worldBonus);
+      return{type:JOB_TYPES[Math.floor(Math.random()*JOB_TYPES.length)],destId:dest.id,pay,crossWorld,destWorld:dest.world,distKm:Math.round(dist/1000)};
     });
 }
 
 let pendingJobs=[],selJob=null;
 function openJobs(ap){
+  // Guard: warn if a job is already active
+  if(G.jobActive && G.job){
+    const dest=G.destAP;
+    showMsg('⚠ Active Job',
+      `You already have an active job:<br><br>
+      <span style="color:#00d4ff">${G.job.type}</span> → <b>${dest?dest.name:'Unknown'}</b><br>
+      Pay: <span style="color:#ffd700">$${G.job.pay.toLocaleString()}</span>${dest&&dest.world!==G.currentWorld?`<br><span style="color:#ffd700;font-size:11px">Use the World Portal (X) to reach W${dest.world}</span>`:''}`,
+      [
+        {t:'✈ Continue Job',c:'gbtn',a:closeMsg},
+        {t:'❌ Abandon Job',c:'rbtn',a:()=>{
+          G.jobActive=false; G.destAP=null; G.job=null;
+          document.getElementById('hDest').textContent='—';
+          document.getElementById('hDest').style.color='#607a90';
+          notify('Job abandoned','#ff4060');
+          openJobs(ap);
+        }},
+        {t:'← Back',a:openMenu},
+      ]
+    );
+    return;
+  }
   pendingJobs=genJobs(ap); selJob=null;
   const WICON={1:'🌍',2:'❄️',3:'🏜'};
   let html=`<span style="color:#607a90">Select a job from ${ap.code}:</span><ul id="jlist" style="margin-top:8px;max-height:min(300px,50vh);overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y">`;
   pendingJobs.forEach((j,i)=>{
     const dest=ALL_AIRPORTS.find(a=>a.id===j.destId);
-    const km=Math.round(Math.hypot(dest.x-ap.x,dest.z-ap.z)/1000);
-    const xw=j.crossWorld?`<span style="color:#ffd700;font-size:9px"> ${WICON[j.destWorld]} W${j.destWorld} BONUS</span>`:'';
+    const km=j.distKm;
+    const xw=j.crossWorld?`<span style="color:#ffd700;font-size:9px"> ${WICON[j.destWorld]} W${j.destWorld} +BONUS</span>`:'';
     html+=`<li data-i="${i}">
       <span style="color:#00d4ff">${j.type}</span><span class="jpay">$${j.pay.toLocaleString()}</span><br>
       <span style="font-size:10px;color:#607a90">${ap.code} → ${dest.code}: ${dest.name} (~${km} km)</span>${xw}
@@ -2844,7 +3431,27 @@ function doAcceptJob(job){
 }
 
 function checkArrival(){
-  // Called on landing; arrival also checked in fly() every frame
+  // Called immediately on touchdown — also runs every frame in fly() as backup
+  if(!G.jobActive||!G.destAP) return;
+  // Must be in the correct world
+  if(G.destAP.world !== G.currentWorld) return;
+  const d=Math.hypot(plane.position.x-G.destAP.x, plane.position.z-G.destAP.z);
+  if(d < ARRIVE_R){
+    const pay=G.job.pay, dest=G.destAP;
+    G.money+=pay; G.jobsDone++; G.totalEarned+=pay;
+    G.jobActive=false; G.destAP=null; G.job=null;
+    saveGame();
+    document.getElementById('hDest').textContent='—';
+    document.getElementById('hDest').style.color='#607a90';
+    updateHUD(); checkAchievements();
+    setTimeout(()=>showMsg('✅ Job Complete!',
+      `Delivered to <span style="color:#00d4ff">${dest.name}</span>!<br><br>
+      <span style="color:#ffd700;font-family:Orbitron;font-size:24px">+$${pay.toLocaleString()}</span><br><br>
+      Balance: <span style="color:#00ff9d">$${G.money.toLocaleString()}</span> &nbsp;·&nbsp; Jobs: <b>${G.jobsDone}</b><br>
+      <span style="color:#607a90;font-size:11px">Don't forget to refuel! (press R at the airport)</span>`,
+      [{t:'🎉 Continue',c:'gbtn',a:closeMsg}]
+    ),400);
+  }
 }
 
 function openShop(){
@@ -2863,9 +3470,69 @@ function openShop(){
   });
   html+='</div>';
   showMsg('✈ Hangar & Shop',`Balance: <span style="color:#ffd700">$${G.money.toLocaleString()}</span><br><br>`+html,
-    [{t:'← Back',a:()=>G.curAP&&G.onGround?openMenu():closeMsg()},{t:'✕ Close',c:'rbtn',a:closeMsg}]
+    [{t:'🎨 Airlines',c:'btn',a:openAirlineShop},{t:'← Back',a:()=>G.curAP&&G.onGround?openMenu():closeMsg()},{t:'✕ Close',c:'rbtn',a:closeMsg}]
   );
 }
+
+function openAirlineShop(){
+  let html='<div style="max-height:min(380px,55vh);overflow-y:auto;text-align:left;-webkit-overflow-scrolling:touch;touch-action:pan-y">';
+  AIRLINES.forEach(al=>{
+    const own=G.ownedAirlines.includes(al.id), cur=G.airlineId===al.id, canAfford=G.money>=al.price;
+    const swatch=`<span style="display:inline-block;width:14px;height:14px;background:#${al.body.toString(16).padStart(6,'0')};border:2px solid #${al.acc.toString(16).padStart(6,'0')};border-radius:3px;vertical-align:middle;margin-right:5px"></span>`;
+    html+=`<div class="sitem ${cur?'owned':''}">
+      <div class="sii">
+        <div class="sn">${swatch}${al.name} ${cur?'✓ ACTIVE':own?'✓ OWNED':''}</div>
+        <div class="sd">${al.desc}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="price">${own?'Owned':al.price===0?'Free':'$'+al.price.toLocaleString()}</div>
+        ${!cur?`<button class="btn ${own?'gbtn':canAfford?'ybtn':'rbtn'}" style="margin-top:4px;font-size:9px;padding:5px 10px" onclick="airlineDo(${al.id})">${own?'Apply':canAfford||al.price===0?'Buy':'Too exp'}</button>`:''}</div>
+    </div>`;
+  });
+  html+='</div>';
+  showMsg('🎨 Airline Liveries',`Balance: <span style="color:#ffd700">$${G.money.toLocaleString()}</span><br><br>`+html,
+    [{t:'✈ Aircraft',c:'btn',a:openShop},{t:'✕ Close',c:'rbtn',a:closeMsg}]
+  );
+}
+window.airlineDo=function(id){
+  const al=AIRLINES[id];
+  if(!al) return;
+  if(G.ownedAirlines.includes(id)){
+    G.airlineId=id;
+    paintPlane(plane,id);
+    notify('Livery applied: '+al.name,'#00ff9d');
+    openAirlineShop();
+  } else {
+    if(G.money<al.price){notify('Not enough money!','#ff4060');return;}
+    G.money-=al.price;
+    G.ownedAirlines.push(id);
+    G.airlineId=id;
+    paintPlane(plane,id);
+    updateHUD();
+    notify('Purchased & applied: '+al.name+' 🎨','#00ff9d');
+    openAirlineShop();
+  }
+};
+
+function paintPlane(planeGrp, airlineId){
+  const al=AIRLINES[airlineId];
+  if(!al) return;
+  planeGrp.traverse(obj=>{
+    if(!obj.isMesh) return;
+    const c=obj.material.color.getHex();
+    // Body (white/light): remap to airline body color
+    if(c===0xddeeff||c===0xeef5ff||c===0xccddee||c===0xeeeedd||c===0x0d1520||c===0xfaf0e0||c===0xffffff||c===0xeeeeff){
+      obj.material=obj.material.clone();
+      obj.material.color.setHex(al.body);
+    }
+    // Accent (stripe/tail): remap to airline accent
+    else if(c===0xdd2222||c===0x2244dd||c===0x228844||c===0xcc8800||c===0x5599dd||c===0xdd5500||c===0x1144aa||c===0xff6600){
+      obj.material=obj.material.clone();
+      obj.material.color.setHex(al.acc);
+    }
+  });
+}
+
 
 window.shopDo=function(id){
   const p=PLANES[id];
@@ -2890,6 +3557,7 @@ function rebuildPlane(){
   plane.rotation.order='YXZ';
   plane.rotation.y=G.yaw;
   S.add(plane);
+  paintPlane(plane,G.airlineId);
 }
 
 // ═══ ADMIN PANEL ═════════════════════════════════════════════════
@@ -3207,6 +3875,7 @@ function saveGame(){
   try{
     localStorage.setItem(SAVE_KEY,JSON.stringify({
       money:G.money, planeId:G.planeId, owned:G.owned,
+      airlineId:G.airlineId||0, ownedAirlines:G.ownedAirlines||[0],
       px:plane.position.x, py:plane.position.y, pz:plane.position.z,
       yaw:G.yaw, onGround:G.onGround,
       jobActive:G.jobActive, destId:G.destAP?G.destAP.id:null, job:G.job,
@@ -3224,6 +3893,7 @@ function loadGame(){
     const raw=localStorage.getItem(SAVE_KEY); if(!raw)return false;
     const d=JSON.parse(raw);
     G.money=d.money||2500; G.planeId=d.planeId||0; G.owned=d.owned||[0];
+    G.airlineId=d.airlineId||0; G.ownedAirlines=d.ownedAirlines||[0];
     G.yaw=d.yaw||0; G.onGround=d.onGround!==undefined?d.onGround:true;
     G.jobsDone=d.jobsDone||0; G.totalEarned=d.totalEarned||0;
     G.distFlown=d.distFlown||0; G.landings=d.landings||0;
@@ -3245,6 +3915,7 @@ function loadGame(){
     plane=buildPlane(G.planeId);
     plane.rotation.order='YXZ';
     plane.position.copy(pos); plane.rotation.y=G.yaw; S.add(plane);
+    paintPlane(plane,G.airlineId);
     updateHUD(); return true;
   }catch(e){return false;}
 }
