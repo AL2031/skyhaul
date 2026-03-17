@@ -378,6 +378,28 @@ const ALL_AIRPORTS=[
 ];
 // Active airports (current world) — updated on world change
 let AIRPORTS=ALL_AIRPORTS.filter(a=>a.world===1);
+  // ═══ ADD TOKYO HANEDA AIRPORT (SAFE INJECTION) ═══════════
+(function(){
+  // Prevent duplicate insert
+  if(typeof ALL_AIRPORTS === 'undefined') return;
+
+  const exists = ALL_AIRPORTS.some(a => a.code === 'HND');
+  if(exists) return;
+
+  const TOKYO_AP = {
+    id: 999,
+    code: 'HND',
+    name: 'Tokyo Haneda Intl',
+    world: 1,
+    x: 420000,
+    z: 380000
+  };
+
+  ALL_AIRPORTS.push(TOKYO_AP);
+
+  // expose globally so other systems can use it
+  window.TOKYO_AP = TOKYO_AP;
+})();
 
 const JOB_TYPES=['Cargo Haul','Passenger Run','Mail Delivery','Medical Supplies','Express Freight',
   'VIP Charter','Cold Chain','Tech Equipment','Film Crew','Relief Aid','Livestock Run','Secret Package'];
@@ -1901,6 +1923,27 @@ function warpToWorld(w){
   G.AIRPORTS=AIRPORTS;
   G.currentWorld=w;
   buildWorldAirports(w); // lazy-build if not yet built
+  if(w === 1 && window.TOKYO_AP){
+  const ap = window.TOKYO_AP;
+
+  if(!ap._built){
+    buildTokyoCity(ap);
+    buildTokyoRunways(ap);
+    buildTokyoTerminals(ap);
+    spawnTokyoParkedPlanes(ap);
+    buildTokyoLights(ap);
+
+    buildTokyoSkytree(ap);
+    buildTokyoBay(ap);
+    buildTokyoBridges(ap);
+    buildTokyoTaxiways(ap);
+    boostTokyoNight(ap);
+
+    spawnTokyoTrain(ap);
+
+    ap._built = true;
+  }
+}
   showWorldAirports(w);
   const dest=AIRPORTS[0];
   plane.position.set(dest.x, GY, dest.z+3000);
@@ -3260,6 +3303,7 @@ function loop(){
   updateApLabels(); drawInstruments();
   updateTowerCollapses(dt); updateParticles(); updateSmokeColumns(dt); updateEmgVehicles(dt);
   updateNPCs(dt);
+  updateTokyoTrains(dt);
   updatePlaneLights();
 
   // Player gear animation
