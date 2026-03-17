@@ -461,42 +461,44 @@ const G={
 };
 
 // ═══ THREE.JS SETUP ═════════════════════════════════════════════
-const R=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true});
-R.setPixelRatio(Math.min(devicePixelRatio,2));
-R.setSize(innerWidth,innerHeight);
-R.shadowMap.enabled=false;
+const R = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true });
+R.setPixelRatio(Math.min(devicePixelRatio, 2));
+R.setSize(innerWidth, innerHeight);
+R.shadowMap.enabled = false;
 
-const S=new THREE.Scene();
-S.fog=new THREE.FogExp2(0x87b8e0,0.0000065); // less thick fog = more visible terrain
-S.background=new THREE.Color(0x4a90cc);
+// Create the scene
+const S = new THREE.Scene();
+S.fog = new THREE.FogExp2(0x87b8e0, 0.0000065); // less thick fog
+S.background = new THREE.Color(0x4a90cc);
 
-const CAM=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,10,300000);
-CAM.position.set(0,500,0);
+// Camera
+const CAM = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 10, 300000);
+CAM.position.set(0, 500, 0);
 
-const ambL=new THREE.AmbientLight(0xffffff,.62);
+// Lights
+const ambL = new THREE.AmbientLight(0xffffff, 0.62);
 S.add(ambL);
-const sun=new THREE.DirectionalLight(0xffe090,1.35);
-sun.position.set(40000,100000,25000);
-sun.castShadow=true;
-sun.shadow.mapSize.set(512,512);
-sun.shadow.camera.far=100000;
-sun.shadow.camera.left=sun.shadow.camera.bottom=-50000;
-sun.shadow.camera.right=sun.shadow.camera.top=50000;
+
+const sun = new THREE.DirectionalLight(0xffe090, 1.35);
+sun.position.set(40000, 100000, 25000);
+sun.castShadow = true;
+sun.shadow.mapSize.set(512, 512);
+sun.shadow.camera.far = 100000;
+sun.shadow.camera.left = sun.shadow.camera.bottom = -50000;
+sun.shadow.camera.right = sun.shadow.camera.top = 50000;
 S.add(sun);
-// Moon — cool blue-white light at night
-const moonLight=new THREE.DirectionalLight(0x8899cc,0);
-moonLight.position.set(-60000,80000,-40000);
+
+const moonLight = new THREE.DirectionalLight(0x8899cc, 0);
+moonLight.position.set(-60000, 80000, -40000);
 S.add(moonLight);
 
-// ═══ WORLD ══════════════════════════════════════════════════════
-function bm(c){return new THREE.MeshLambertMaterial({color:c});}
-// Night light materials — tracked for day/night toggling
-const NIGHT_LIGHTS=[];  // {mesh, dayCol, nightCol}
-function nightMat(dayCol,nightCol){
-  const mat=new THREE.MeshLambertMaterial({color:dayCol,emissive:0x000000});
-  NIGHT_LIGHTS.push({mat,dayCol,nightCol});
-  return mat;
-}
+// ---------- Tweak intensities & colors AFTER declaration ----------
+sun.intensity = 1.2;
+ambL.intensity = 0.6;
+moonLight.intensity = 0.3;
+
+S.background = new THREE.Color(0x87ceeb);
+if (S.fog) S.fog.color.setHex(0x87ceeb);
 // Beacon lights — pulsing red (aviation obstruction lights)
 const BEACONS=[];  // mesh references for aviation beacons
 function beaconMat(){
