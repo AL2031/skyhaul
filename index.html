@@ -1160,24 +1160,17 @@ const STREET_LIGHTS=[];
 
 
 
+
 // ── Analytic terrain height (must match heightmap vertex math) ───
-
 function terrainNoiseW1(x,z){
-
  let v=0,a=1,f=1/180000;
-
- for(let o=0;o<5;o++){
-
+ // Increased octaves from 5 to 8 for higher frequency terrain detail
+ for(let o=0;o<8;o++){
   v+=a*(Math.sin(x*f+o*1.7)*Math.cos(z*f*0.9+o*2.3)
-
      +Math.sin(x*f*1.4+o*3.1)*Math.cos(z*f+o*0.7));
-
   a*=0.5; f*=2.1;
-
  }
-
  return v/3.2;
-
 }
 
 const MPEAKS_W1=[
@@ -1342,7 +1335,7 @@ gnd.rotation.x=-Math.PI/2; gnd.position.y=-200; S.add(gnd);
 
 (function buildHeightmap(){
 
- const SEGS=72, SIZE=800000;
+ const SEGS=256, SIZE=800000; // Increased from 72 for much higher resolution
 
  const geo=new THREE.PlaneGeometry(SIZE,SIZE,SEGS,SEGS);
 
@@ -1781,29 +1774,25 @@ mtn(55000,270000,32000,18000,0x6a6050); mtn(85000,278000,29000,16000,0x7a6a55);
 
 
 // ── Forest clusters ─────────────────────────────────────────────
-
 function trees(cx,cz,n,r){
-
- for(let i=0;i<n;i++){
-
+ const placed = [];
+ for(let i=0; i<n*4; i++){ // Loop extra times to find empty spots
+  if(placed.length >= n) break; // Stop when we have enough trees
+  
   const tx=cx+(Math.random()-.5)*r*2, tz=cz+(Math.random()-.5)*r*2;
+  
+  // Check if this spot is too close to an existing tree
+  if(placed.some(p => Math.hypot(tx-p.x, tz-p.z) < 400)) continue; 
+  placed.push({x:tx, z:tz});
 
   const g=terrainHeightWorld1(tx,tz);
-
   const h=280+Math.random()*480, tr=110+Math.random()*160;
-
   const tk=new THREE.Mesh(new THREE.CylinderGeometry(28,38,h*.4,6),bm(0x5a3a18));
-
   tk.position.set(tx,g+h*.22,tz); S.add(tk);
-
   const tp=new THREE.Mesh(new THREE.ConeGeometry(tr,h*.65,7),bm(0x1e6620));
-
   tp.position.set(tx,g+h*.55,tz); S.add(tp);
-
  }
-
 }
-
 trees(-90000,65000,14,9000); trees(195000,85000,12,8000);
 
 trees(45000,155000,16,11000); trees(-105000,65000,12,8000);
@@ -2127,55 +2116,41 @@ function buildHwy(x1,z1,x2,z2,oz,roadCol){
 
 
 function buildSmallTown(cx,cz){
-
  const g0=isWorld1TerrainRegion(cx,cz)?terrainHeightWorld1(cx,cz):0;
-
  const base=new THREE.Mesh(new THREE.PlaneGeometry(4500,4500),bm(0x1e1e1e));
-
  base.rotation.x=-Math.PI/2; base.position.set(cx,g0+3,cz); S.add(base);
-
  const bCols=[0x8a7a6a,0x7a7a8a,0x6a8a7a,0x9a8870,0x7a8888,0x887878];
-
- for(let i=0;i<12;i++){
-
+ 
+ const placed = [];
+ for(let i=0;i<40;i++){ // Try up to 40 times to place 12 buildings
+  if(placed.length >= 12) break;
+  
   const tx=cx+(Math.random()-.5)*3800, tz=cz+(Math.random()-.5)*3800;
-
   const bw=120+Math.random()*240, bd=120+Math.random()*240;
+  const radius = Math.max(bw, bd) * 0.6; // Approximate building footprint
+  
+  // Check if it overlaps with an existing building
+  if(placed.some(p => Math.hypot(tx-p.x, tz-p.z) < (radius + p.r + 80))) continue;
+  placed.push({x:tx, z:tz, r:radius});
 
   const bh=80+Math.random()*500;
-
   const tg=isWorld1TerrainRegion(tx,tz)?terrainHeightWorld1(tx,tz):0;
-
   const blk=new THREE.Mesh(new THREE.BoxGeometry(bw,bh,bd),bm(bCols[Math.floor(Math.random()*bCols.length)]));
-
   blk.position.set(tx,tg+bh/2,tz); S.add(blk);
-
+  
   // Window glow
-
   if(bh>150){
-
    const wm=nightMat(0x2a2a2a,0xffee88);
-
    const ws=new THREE.Mesh(new THREE.BoxGeometry(bw*.8,10,4),wm);
-
    ws.position.set(tx,tg+bh*0.6,tz+bd/2+2); S.add(ws);
-
   }
-
  }
-
  // Town roads
-
  const tr1=new THREE.Mesh(new THREE.BoxGeometry(4600,7,120),bm(0x181818));
-
  tr1.rotation.x=-Math.PI/2; tr1.position.set(cx,g0+4,cz); S.add(tr1);
-
  const tr2=new THREE.Mesh(new THREE.BoxGeometry(120,7,4600),bm(0x181818));
-
  tr2.rotation.x=-Math.PI/2; tr2.position.set(cx,g0+4,cz); S.add(tr2);
-
 }
-
 
 
 // World 1 highways
