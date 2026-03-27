@@ -536,9 +536,9 @@ body{background:#000;color:#e0f0ff;font-family:'Share Tech Mono',monospace;overf
 
  <div class="hp"><div class="hl">Status</div><div class="hv" id="hStat" style="font-size:11px;color:#a0c8e0">On Ground</div><div class="hl" style="margin-top:6px">Destination</div><div class="hv" id="hDest" style="font-size:10px;color:#607a90">—</div></div>
 
- <div class="hp"><div class="hl">Flaps</div><div class="hv" id="hFlaps" style="font-size:11px;color:#607a90">UP</div><div class="hl" style="margin-top:6px">Gear</div><div class="hv" id="hGear" style="font-size:11px;color:#00ff9d">DOWN</div></div>
+ <div class="hp"><div class="hl">Flaps</div><div class="hv" id="hFlaps" style="font-size:11px;color:#607a90">UP</div><div class="hl" style="margin-top:6px">Gear</div><div class="hv" id="hGear" style="font-size:11px;color:#00ff9d">DOWN</div><div class="hl" style="margin-top:6px">Spoilers</div><div class="hv" id="hSpoil" style="font-size:11px;color:#607a90">OFF</div></div>
 
- <div class="hp"><div class="hl">Dist/Brg</div><div class="hv" id="hDistBrg" style="font-size:10px;color:#607a90">— km</div><div class="hl" style="margin-top:6px">Autopilot</div><div class="hv" id="hAP" style="font-size:10px;color:#607a90">OFF</div></div>
+ <div class="hp"><div class="hl">Dist/Brg</div><div class="hv" id="hDistBrg" style="font-size:10px;color:#607a90">— km</div><div class="hl" style="margin-top:6px">Autopilot</div><div class="hv" id="hAP" style="font-size:10px;color:#607a90">OFF</div><div class="hl" style="margin-top:6px">Camera</div><div class="hv" id="hCam" style="font-size:10px;color:#607a90">Chase</div></div>
 
 </div>
 
@@ -686,7 +686,7 @@ const uM=m=>m*U_PER_M; // metres → units
 
 // Realistic airport: ~2.5–3 km runway, ICAO 45 m code E/F width
 
-const RW_LEN=30000;  // ≈ 2490 m
+const RW_LEN=60000;  // ≈ 4980 m (doubled for easier takeoff)
 
 const RW_W=528;    // ≈ 44 m
 
@@ -754,13 +754,13 @@ const ALL_AIRPORTS=[
 
  {id:3, name:'Kagoshima Intl',   code:'KOG',x:50000, z:-200000, col:0x116688,world:1},
 
- {id:4, name:'Mountain Ridge AP', code:'MTR',x:-180000,z:90000,  col:0x665544,world:1},
+ {id:4, name:'Mountain Ridge AP', code:'MTR',x:-280000,z:90000,  col:0x665544,world:1},
 
  {id:5, name:'Tokyo-Haneda Intl', code:'HND',x:240000, z:-60000, col:0x334455,world:1},
 
- {id:6, name:'Beijing-Capital',  code:'PEK',x:75000, z:210000, col:0xcc7722,world:1},
+ {id:6, name:'Beijing-Capital',  code:'PEK',x:180000, z:220000, col:0xcc7722,world:1},
 
- {id:7, name:'Glacier Point AP',  code:'GLA',x:-220000,z:-50000, col:0x336677,world:1},
+ {id:7, name:'Glacier Point AP',  code:'GLA',x:-220000,z:20000,  col:0x336677,world:1},
 
  {id:8, name:'Eastport Executive', code:'EPX',x:290000, z:110000, col:0x553366,world:1},
 
@@ -1209,7 +1209,7 @@ const AIRPORT_LOCS_W1=[
 
  [0,0],[140000,35000],[-110000,-160000],[50000,-200000],
 
- [-180000,90000],[240000,-60000],[75000,210000],[-220000,-50000],
+ [-280000,90000],[240000,-60000],[180000,220000],[-220000,20000],
 
  [290000,110000],[-5000,-290000],[185000,50000],[-320000,30000],
 
@@ -1235,15 +1235,12 @@ function terrainHeightWorld1(px,pz){
  let apFlat=0;
  AIRPORT_LOCS_W1.forEach(([ax,az])=>{
   const d=Math.hypot(px-ax,pz-az);
-  if(d<18000) apFlat+=Math.max(0,1-d/18000);
+  if(d<36000) apFlat+=Math.max(0,1-d/36000); // radius covers full runway length
  });
- 
- // FIXED: Flatten airports to altitude 150 instead of 0.
- // This creates green grass instead of beach sand, and 
- // hides the floating rivers safely underneath the runway!
+ // Flatten airports fully to altitude 300
  if(apFlat>0) {
-  const flatAmt = Math.min(1, apFlat*2.5);
-  h = h * (1 - flatAmt) + 150 * flatAmt;
+  const flatAmt = Math.min(1, apFlat*4.0);
+  h = h * (1 - flatAmt) + 300 * flatAmt;
  }
  
  return Math.max(0,Math.min(45000,h));
@@ -1261,6 +1258,15 @@ function terrainHeightWorld2(wx,wz){
 
  h+=Math.max(0,1-Math.hypot(lx-90000,lz-60000)/220000)*1800;
 
+ // Flatten airport zones
+ const AP_W2=[[0,W2Z],[130000,W2Z+45000],[-90000,W2Z-120000],[200000,W2Z+80000],
+  [-200000,W2Z+60000],[60000,W2Z-180000],[-140000,W2Z-220000],[280000,W2Z-40000],
+  [-250000,W2Z+100000],[100000,W2Z+220000],[350000,W2Z+150000],[-320000,W2Z-180000],
+  [180000,W2Z-300000],[-60000,W2Z+280000],[260000,W2Z+200000],[-200000,W2Z+300000]];
+ let apF=0;
+ AP_W2.forEach(([ax,az])=>{ const d=Math.hypot(wx-ax,wz-az); if(d<36000) apF+=Math.max(0,1-d/36000); });
+ if(apF>0){ const fa=Math.min(1,apF*4); h=h*(1-fa)+2400*fa; }
+
  return Math.max(0,Math.min(12000,h));
 
 }
@@ -1276,6 +1282,15 @@ function terrainHeightWorld3(wx,wz){
  h+=mesa*6500;
 
  h+=Math.sin(lx*0.000012)*380;
+
+ // Flatten airport zones
+ const AP_W3=[[0,W3Z],[150000,W3Z+30000],[-120000,W3Z-140000],[80000,W3Z-210000],
+  [-190000,W3Z+80000],[230000,W3Z-55000],[60000,W3Z+200000],[-210000,W3Z-60000],
+  [300000,W3Z+90000],[-10000,W3Z-300000],[180000,W3Z+250000],[-280000,W3Z+150000],
+  [120000,W3Z-380000],[-350000,W3Z-200000],[380000,W3Z+50000],[-80000,W3Z+350000]];
+ let apF=0;
+ AP_W3.forEach(([ax,az])=>{ const d=Math.hypot(wx-ax,wz-az); if(d<36000) apF+=Math.max(0,1-d/36000); });
+ if(apF>0){ const fa=Math.min(1,apF*4); h=h*(1-fa)+1800*fa; }
 
  return Math.max(0,Math.min(14000,h));
 
@@ -1899,7 +1914,7 @@ function buildSuburbs(def){
 
  const cityH = rows * CITY_CELL_H;
 
- const sBase=terrainHeightWorld1(cx,cz);
+ const sBase=terrainHeightWorld1(cx,cz)+500;
 
 
 
@@ -2015,7 +2030,7 @@ function buildSuburbs(def){
 
    const hz = gz + BLOCK_D/2;
 
-   const gH=terrainHeightWorld1(hx,hz);
+   const gH=terrainHeightWorld1(hx,hz)+500;
 
    const hy = gH + 4 + H/2;  // grass + half building height
 
@@ -2575,9 +2590,9 @@ const CITY_DEFS=[
 
  {cx:225000, cz:-48000, cols:16, rows:13, density:0.82, name:'Northfield Downtown',radius:34000},
 
- {cx:65000, cz:190000, cols:9, rows:8, density:0.62, name:'Sunvalley Heights', radius:20000},
+ {cx:65000, cz:150000, cols:9, rows:8, density:0.62, name:'Sunvalley Heights', radius:20000},
 
- {cx:-190000,cz:75000, cols:8, rows:8, density:0.58, name:'Ridge Town',     radius:18000},
+ {cx:-260000,cz:150000, cols:8, rows:8, density:0.58, name:'Ridge Town',     radius:18000},
 
  {cx:160000, cz:-180000,cols:12, rows:10, density:0.70, name:'Coastal Metro',   radius:26000},
 
@@ -2595,15 +2610,14 @@ function buildCity(def){
 
  const totalW=cols*cellW, totalH=rows*cellH;
 
- const cBase=terrainHeightWorld1(cx,cz);
+ const cBase=terrainHeightWorld1(cx,cz)+500;
 
 
 
- // City base (dark asphalt)
-
- const base=new THREE.Mesh(new THREE.PlaneGeometry(totalW+1200,totalH+1200),bm(0x282828));
-
- base.rotation.x=-Math.PI/2; base.position.set(cx,cBase+3,cz); S.add(base);
+ // City base — thick pedestal box so terrain can never poke through from below.
+ // Top face sits at cBase+3; box is 2000 units deep, burying any terrain variation.
+ const base=new THREE.Mesh(new THREE.BoxGeometry(totalW+1200,2000,totalH+1200),bm(0x282828));
+ base.position.set(cx,cBase-997,cz); S.add(base);
 
 
 
@@ -2687,9 +2701,9 @@ function buildCity(def){
 
    // Heights in u (×0.083 m): low ~5–14 m, mid ~18–45 m, tower ~35–95 m
 
-   const bh=isSky?420+Math.random()*620 : isTall?180+Math.random()*280 : 60+Math.random()*100;
+   const bh=isSky?4000+Math.random()*7000 : isTall?600+Math.random()*1000 : 60+Math.random()*100;
 
-   const gY=terrainHeightWorld1(bx,bz);
+   const gY=terrainHeightWorld1(bx,bz)+500;
 
 
 
@@ -2967,8 +2981,7 @@ function buildCity(def){
 
 
 
- // Central landmark tower — pivot group at base (~260–420 m)
-
+ // Central landmark tower
  const th=3200+Math.random()*2000;
 
  const lmkId=_colliderId++;
@@ -4225,7 +4238,45 @@ S.add(CG);
 
 
 
-// ═══ AIRPORTS ════════════════════════════════════════════════════
+// ═══ WORLD BORDERS ═══════════════════════════════════════════════
+// Tall glowing walls at the edge of each world's terrain (±400000 in X/Z)
+(function buildWorldBorders(){
+ const HALF=400000, WALL_H=18000, WALL_T=800, SIZE=800000+WALL_T*2;
+ const cols={1:0xff3300,2:0x0088ff,3:0xff8800};
+ [
+  {oz:0,    col:cols[1]},
+  {oz:W2Z,  col:cols[2]},
+  {oz:W3Z,  col:cols[3]},
+ ].forEach(({oz,col})=>{
+  const mat=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.55,side:THREE.DoubleSide});
+  const glowMat=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.12,side:THREE.DoubleSide});
+  // 4 faces: N/S/E/W
+  [
+   {pos:[0,           WALL_H/2, oz-HALF],  rot:[0,0,0],         w:SIZE,   d:WALL_T},
+   {pos:[0,           WALL_H/2, oz+HALF],  rot:[0,0,0],         w:SIZE,   d:WALL_T},
+   {pos:[-HALF,       WALL_H/2, oz     ],  rot:[0,Math.PI/2,0], w:SIZE,   d:WALL_T},
+   {pos:[ HALF,       WALL_H/2, oz     ],  rot:[0,Math.PI/2,0], w:SIZE,   d:WALL_T},
+  ].forEach(({pos,rot,w,d})=>{
+   // Solid face
+   const wall=new THREE.Mesh(new THREE.BoxGeometry(w,WALL_H,d),mat);
+   wall.position.set(...pos); wall.rotation.set(...rot); S.add(wall);
+   // Wide glow halo behind it
+   const glow=new THREE.Mesh(new THREE.BoxGeometry(w,WALL_H,d*12),glowMat);
+   glow.position.set(...pos); glow.rotation.set(...rot); S.add(glow);
+  });
+  // Top cap — horizontal glowing strip along the top edge
+  const capMat=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.8});
+  [
+   [0,           oz-HALF, SIZE, WALL_T*3],
+   [0,           oz+HALF, SIZE, WALL_T*3],
+   [-HALF,       oz,      WALL_T*3, SIZE],
+   [ HALF,       oz,      WALL_T*3, SIZE],
+  ].forEach(([cx,cz,cw,cd])=>{
+   const cap=new THREE.Mesh(new THREE.PlaneGeometry(cw,cd),capMat);
+   cap.rotation.x=-Math.PI/2; cap.position.set(cx,WALL_H,cz); S.add(cap);
+  });
+ });
+})();
 
 function buildAirport(ap){
 
@@ -4245,9 +4296,9 @@ function buildAirport(ap){
 
  const fieldW=42000, fieldD=40000;
 
- const gnd=new THREE.Mesh(new THREE.PlaneGeometry(fieldW,fieldD),bm(grass));
+ const gnd=new THREE.Mesh(new THREE.BoxGeometry(fieldW,3000,fieldD),bm(grass));
 
- gnd.rotation.x=-Math.PI/2; gnd.position.y=0.5; g.add(gnd);
+ gnd.position.set(0,-1499,0); g.add(gnd);
 
 
 
@@ -4325,7 +4376,14 @@ function buildAirport(ap){
 
 
 
- const apY=surfaceYWorld(ap.x,ap.z,ap.world||1);
+ // Sample terrain along full runway length and use the MAX height,
+ // so no part of the runway can be buried by terrain variations.
+ const RW_OFFSETS=[-28000,-20000,-12000,0,12000,20000,28000];
+ let apY=surfaceYWorld(ap.x,ap.z,ap.world||1);
+ RW_OFFSETS.forEach(dz=>{
+  const h=surfaceYWorld(ap.x,ap.z+dz,ap.world||1);
+  if(h>apY) apY=h;
+ });
 
  g.position.set(ap.x,apY,ap.z);
 
@@ -5411,7 +5469,7 @@ function clockOutOffice(){}
 
 document.addEventListener('keydown',e=>{
 
- if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
+ if(['ArrowDown','ArrowUp','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
 
  G.keys[e.code]=true;
 
@@ -7753,6 +7811,14 @@ function fly(){
 
  G.distFlown+=G.spd;
 
+ // ── World border enforcement ────────────────────────────────────
+ const _WBOUND=399000;
+ const _woz=G.currentWorld===2?W2Z:G.currentWorld===3?W3Z:0;
+ if(plane.position.x< -_WBOUND){plane.position.x=-_WBOUND;G.spd*=0.4;notify('⛔ World boundary!','#ff3300');}
+ if(plane.position.x>  _WBOUND){plane.position.x= _WBOUND;G.spd*=0.4;notify('⛔ World boundary!','#ff3300');}
+ if(plane.position.z<_woz-_WBOUND){plane.position.z=_woz-_WBOUND;G.spd*=0.4;notify('⛔ World boundary!','#ff3300');}
+ if(plane.position.z>_woz+_WBOUND){plane.position.z=_woz+_WBOUND;G.spd*=0.4;notify('⛔ World boundary!','#ff3300');}
+
 
 
  const gy=surfaceYWorld(plane.position.x, plane.position.z, G.currentWorld);
@@ -7991,7 +8057,8 @@ function fly(){
 
    const hdist=Math.hypot(px-c.x, pz-c.z);
 
-   const baseY=surfaceYWorld(c.x,c.z,c.world||1);
+   // Towers sit on top of city baseplates (+500 city elevation offset)
+   const baseY=surfaceYWorld(c.x,c.z,c.world||1)+(c.type==='tower'?500:0);
 
    if(c.type==='tower'){
 
